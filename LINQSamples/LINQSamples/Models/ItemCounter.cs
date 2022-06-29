@@ -1,4 +1,4 @@
-﻿namespace LINQSamples;
+﻿namespace LINQSamples.Models;
 
 public class ItemCounter
 {
