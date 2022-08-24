@@ -1,0 +1,20 @@
+{
+    "date":"2021-12-01T00:00:00-07:00",
+    "temperaturecelsius":7.9,
+    "feelslike":3.14,
+    "description":"overcast clouds",
+    "pressure":1003,
+    "humidity":79, 
+    "coord": 
+    {
+      "lon":48.75,
+      "lat":8.24
+    }, 
+    "keywords":
+    [
+      "Chill",
+      "Windy"
+    ],
+    "country":"DE",
+    "city":"Baden-Baden"
+}
