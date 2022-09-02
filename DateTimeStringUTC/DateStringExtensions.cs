@@ -2,13 +2,23 @@
 {
     public static class DateStringExtensions
     {
+
+        public static DateTime DateTimeFromIsoString(this string isoString)
+        {
+            _ = DateTime.TryParse(isoString, out DateTime dateTime);
+            return dateTime;
+        }
+
         public static string TimeStringFromIsoDateString(this string isoString)
         {
             try
             {
                 var parts = isoString.Split('T')[1].Split(':');
                 var ampm = int.Parse(parts[0]) > 12 ? "PM" : "AM";
-                return $"{parts[0].TrimStart('0'),2}:{parts[1]} {ampm}";
+                if (ampm == "AM")
+                    return $"{parts[0].TrimStart('0'),2}:{parts[1]} {ampm}";
+
+                return $"{(int.Parse(parts[0]) - 12),2}:{parts[1]} {ampm}";
             }
             catch
             {
@@ -30,8 +40,6 @@
 
             if (utcDateTime.Kind == DateTimeKind.Local)
                 return TimeZoneInfo.ConvertTime(utcDateTime, DallasTimeZoneInfo());
-
-
             return utcDateTime;
         }
 
