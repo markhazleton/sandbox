@@ -12,4 +12,4 @@ foreach (var item in test.ConvertDateToShortTime())
 }
 
 
-// BenchmarkDotNet.Running.BenchmarkRunner.Run<BenchmarkingTests>();
+BenchmarkDotNet.Running.BenchmarkRunner.Run<BenchmarkingTests>();

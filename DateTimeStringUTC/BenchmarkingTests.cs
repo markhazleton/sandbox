@@ -9,6 +9,7 @@ public class BenchmarkingTests
 {
     private string[] IsoString = new string[]
     {
+        "2022-09-06T01:05:00-05:00",
         "2022-09-06T00:05:00-05:00",
         "2022-09-06T03:45:00-05:00",
         "2022-09-06T11:45:00-05:00",

@@ -11,19 +11,19 @@
 
         public static string TimeStringFromIsoDateString(this string isoString)
         {
-            try
-            {
-                var parts = isoString.Split('T')[1].Split(':');
-                var ampm = int.Parse(parts[0]) > 12 ? "PM" : "AM";
-                if (ampm == "AM")
-                    return $"{parts[0].TrimStart('0'),2}:{parts[1]} {ampm}";
+            var firstParts = isoString.Split('T');
+           
+            if (firstParts.Length == 1) return firstParts[0];
 
-                return $"{(int.Parse(parts[0]) - 12),2}:{parts[1]} {ampm}";
-            }
-            catch
-            {
-                throw new Exception("String is not valid iso format");
-            }
+            var parts = firstParts[1].Split(':');
+
+            if (parts.Length == 1) return parts[0]; 
+
+            var ampm = int.Parse(parts[0]) > 12 ? "PM" : "AM";
+            if (ampm == "AM")
+                return $"{parts[0].TrimStart('0'),2}:{parts[1]} {ampm}";
+
+            return $"{(int.Parse(parts[0]) - 12),2}:{parts[1]} {ampm}";
         }
 
         public static DateTime ToCST(this DateTime date)
