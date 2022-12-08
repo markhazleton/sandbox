@@ -2,18 +2,28 @@
 {
     public static class DateStringExtensions
     {
+
+        public static DateTime DateTimeFromIsoString(this string isoString)
+        {
+            _ = DateTime.TryParse(isoString, out DateTime dateTime);
+            return dateTime;
+        }
+
         public static string TimeStringFromIsoDateString(this string isoString)
         {
-            try
-            {
-                var parts = isoString.Split('T')[1].Split(':');
-                var ampm = int.Parse(parts[0]) > 12 ? "PM" : "AM";
+            var firstParts = isoString.Split('T');
+           
+            if (firstParts.Length == 1) return firstParts[0];
+
+            var parts = firstParts[1].Split(':');
+
+            if (parts.Length == 1) return parts[0]; 
+
+            var ampm = int.Parse(parts[0]) > 12 ? "PM" : "AM";
+            if (ampm == "AM")
                 return $"{parts[0].TrimStart('0'),2}:{parts[1]} {ampm}";
-            }
-            catch
-            {
-                throw new Exception("String is not valid iso format");
-            }
+
+            return $"{(int.Parse(parts[0]) - 12),2}:{parts[1]} {ampm}";
         }
 
         public static DateTime ToCST(this DateTime date)
@@ -30,8 +40,6 @@
 
             if (utcDateTime.Kind == DateTimeKind.Local)
                 return TimeZoneInfo.ConvertTime(utcDateTime, DallasTimeZoneInfo());
-
-
             return utcDateTime;
         }
 

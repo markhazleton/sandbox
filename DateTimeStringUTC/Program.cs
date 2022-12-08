@@ -29,3 +29,4 @@ public class BenchmarkingTests
 
 
 
+BenchmarkDotNet.Running.BenchmarkRunner.Run<BenchmarkingTests>();
