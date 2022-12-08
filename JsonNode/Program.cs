@@ -86,7 +86,7 @@ var forecastObject = new JsonObject
     ["description"] = "overcast clouds",
     ["pressure"] = 1003,
     ["humidity"] = 79,
-    ["coord"] =  new JsonObject()
+    ["coord"] = new JsonObject()
     {
         //["lon"] = 48.75,
         ["lat"] = 8.24
@@ -97,9 +97,9 @@ var forecastObject = new JsonObject
         ["deg"] = 200,
         ["gust"] = 17.49
     },
-  ["keywords"] = new JsonArray("Chill","Windy"),
-  ["country"] = "DE",
-  ["city"] = "Baden-Baden"
+    ["keywords"] = new JsonArray("Chill", "Windy"),
+    ["country"] = "DE",
+    ["city"] = "Baden-Baden"
 };
 
 // Print the JSON object

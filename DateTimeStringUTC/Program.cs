@@ -1,17 +1,30 @@
-﻿
-using DateTimeStringUTC;
+﻿using DateTimeStringUTC;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Running;
 
-var IsoString = "2022-09-06T11:45:00-05:00";
-Console.WriteLine(DateTime.Parse(IsoString).ToShortTimeString());
-Console.WriteLine(IsoString.TimeStringFromIsoDateString());
-
-
-IsoString = "2022-09-06T11:45:00-05:00";
-var LocalDate = DateTime.Parse(IsoString);
+BenchmarkRunner.Run<BenchmarkingTests>();
 
 
-Console.WriteLine(DateTime.Parse(IsoString).ToDallasTime().ToString("h:mm tt"));
-Console.WriteLine(IsoString.TimeStringFromIsoDateString());
+[MemoryDiagnoser]
+[Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.FastestToSlowest)]
+[RankColumn]
+public class BenchmarkingTests
+{
+    [Benchmark]
+    public string Method1()
+    {
+        var IsoString = "2022-09-06T11:45:00-05:00";
+        return DateTime.Parse(IsoString).ToDallasTime().ToString("h:mm tt");
+    }
+    [Benchmark]
+    public string Method2()
+    {
+        var IsoString = "2022-09-06T11:45:00-05:00";
+        return IsoString.TimeStringFromIsoDateString();
+    }
+
+}
+
 
 
 
