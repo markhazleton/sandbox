@@ -6,9 +6,9 @@ using System.Text;
 Console.WriteLine("Start of CSV Sample");
 
 List<Student> students = GetStudentList();
-Console.WriteLine($"Got List with {students.Count} students.");
+Console.WriteLine($"Got List with {students.Count} students");
 
-WriteToCSV(students, Resources.STRStudentsFileName);
+WriteToCSV<Student>(students, Resources.STRStudentsFileName);
 Console.WriteLine($"Write student list to csv file named {Resources.STRStudentsFileName}.");
 
 students.Clear();
@@ -43,9 +43,13 @@ string GetCsvString<T>(T model)
         {
             dataRow.Add($"\"{(DateTime)value:yyyy-MM-dd}\"");
         }
-        else
+        else if (property.PropertyType.IsPrimitive)
         {
             dataRow.Add(value is null ? string.Empty : value.ToString());
+        }
+        else
+        {
+            dataRow.Add(string.Empty);
         }
     }
     // Return the CSV string
@@ -135,7 +139,7 @@ static List<Student> GetStudentList()
 };
 }
 
-void WriteToCSV(List<Student> students, string path)
+void WriteToCSV<T>(List<T> listT, string path)
 {
     var properties = typeof(Student).GetProperties();
     List<string> headerRow = new();
@@ -145,9 +149,9 @@ void WriteToCSV(List<Student> students, string path)
     }
     StringBuilder csv = new();
     csv.AppendLine(string.Join(",", headerRow));
-    foreach (var student in students)
+    foreach (var student in listT)
     {
-        csv.AppendLine(GetCsvString<Student>(student));
+        csv.AppendLine(GetCsvString<T>(student));
     }
     using StreamWriter sw = new(path);
     sw.Write(csv.ToString());
