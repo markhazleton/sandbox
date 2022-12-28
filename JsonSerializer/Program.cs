@@ -31,7 +31,7 @@ Console.WriteLine("Serializing a JSON file Async with JsonSerializerOptions");
 string fileName = "WeatherForecast.json";
 using FileStream createStream = File.Create(fileName);
 
-JsonSerializerOptions options = new JsonSerializerOptions
+JsonSerializerOptions options = new()
 {
     WriteIndented = true
 };

@@ -37,11 +37,11 @@ string GetCsvString<T>(T model)
         object? value = property.GetValue(model, null);
         if (property.PropertyType == typeof(string))
         {
-            dataRow.Add("\"" + value + "\"");
+            dataRow.Add($"\"{value}\"");
         }
         else if (property.PropertyType == typeof(DateTime))
         {
-            dataRow.Add("\"" + ((DateTime)value).ToString("yyyy-MM-dd") + "\"");
+            dataRow.Add($"\"{(DateTime)value:yyyy-MM-dd}\"");
         }
         else
         {
