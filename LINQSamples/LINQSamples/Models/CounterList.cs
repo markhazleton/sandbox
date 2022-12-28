@@ -1,4 +1,5 @@
-﻿namespace LINQSamples.Models;
+﻿
+namespace LINQSamples.Models;
 
 public class CounterList
 {
