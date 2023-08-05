@@ -1,145 +1,137 @@
-﻿using HtmlAgilityPack;
-using SimpleSiteCrawler.Models;
+﻿using SimpleSiteCrawler.Models;
 using System.Diagnostics;
-using System.Net;
-using System.Text.RegularExpressions;
 
 namespace SimpleSiteCrawler.Helpers;
 
 public partial class SiteCrawler
 {
-    private readonly List<CrawlResult> crawlResults;
-    private readonly string domain;
+    public readonly List<CrawlResult> crawlResults;
     private readonly HttpClient httpClient;
-    private readonly Queue<string> linksToParse;
-    private readonly HashSet<string> visitedLinks;
 
     public SiteCrawler(string domain, HttpClient httpClient)
     {
-        this.domain = domain;
         this.httpClient = httpClient;
-        visitedLinks = new HashSet<string>();
         crawlResults = new List<CrawlResult>();
-        linksToParse = new Queue<string>();
     }
 
-    private async Task CrawlPage(string url, int depth, CancellationToken ct = default)
+    private async Task<CrawlResult> CrawlPage(string url, int Id, int Depth, string fromUrl, CancellationToken ct = default)
     {
-        if (!visitedLinks.Contains(url) && depth >= 0)
+        var crawlResult = new CrawlResult(url)
         {
-            visitedLinks.Add(url);
-            var crawlResult = new CrawlResult(url);
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            Id = Id,
+            Depth = Depth,
+            PageFound = fromUrl
+            
+        };
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
 
-            try
+        try
+        {
+            var response = await httpClient.GetAsync(url, ct);
+            crawlResult.StatusCode = (int)response.StatusCode;
+
+            if (response.IsSuccessStatusCode)
             {
-                var response = await httpClient.GetAsync(url, ct);
-                crawlResult.StatusCode = (int)response.StatusCode;
+                crawlResult.SetLinkList(await response.Content.ReadAsStringAsync(ct));
 
-                if (response.IsSuccessStatusCode)
-                {
-                    string htmlContent = await response.Content.ReadAsStringAsync(ct);
-
-                    // Use a proper HTML parser like AngleSharp or HtmlAgilityPack
-                    foreach (string link in ParseLinks(htmlContent))
-                    {
-                        if (!visitedLinks.Contains(link))
-                        {
-                            crawlResult.FoundLinks.Add(link);
-
-                            // Use a priority queue (e.g., MinHeap) instead of a regular queue
-                            linksToParse.Enqueue(link);
-                        }
-                    }
-
-                    // Implement depth limitation
-                    foreach (var link in crawlResult.FoundLinks)
-                    {
-                        await CrawlPage(link, depth - 1, ct);
-                    }
-                }
             }
-            catch (HttpRequestException ex)
+        }
+        catch (HttpRequestException ex)
+        {
+            // Handle HTTP errors
+            crawlResult.StatusCode = (int)ex.StatusCode;
+            crawlResult.Errors.Add(ex.Message);
+            Console.WriteLine("Error accessing page: " + url);
+            Console.WriteLine(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            crawlResult.StatusCode = -1; // An error occurred
+            crawlResult.Errors.Add(ex.Message);
+            Console.WriteLine("Error accessing page: " + url);
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            stopwatch.Stop();
+            crawlResult.ElapsedTime = stopwatch.ElapsedMilliseconds;
+            crawlResult.CrawlDate = DateTime.Now;
+        }
+        Console.WriteLine($"{crawlResult.Id:D4}:{crawlResult.Depth:D4}:{crawlResult.StatusCode} --> {GetPathFromUrl(crawlResult.baseUrl)} found at {GetPathFromUrl(crawlResult.PageFound)}");
+
+        return crawlResult;
+    }
+    public static string GetPathFromUrl(string fullUrl)
+    {
+        if (string.IsNullOrEmpty(fullUrl)) return string.Empty;
+
+        try
+        {
+            Uri uri = new Uri(fullUrl);
+            return uri.AbsolutePath;
+        }
+        catch (UriFormatException)
+        {
+            throw new ArgumentException("Invalid URL format");
+        }
+    }
+
+    public async Task Crawl(string link, CancellationToken ct = default)
+    {
+        int CrawlDepth = 1;
+        int CurrentID = 1;
+        var pageResult = await CrawlPage(link, CurrentID, CrawlDepth, link, ct);
+
+        crawlResults.Add(pageResult);
+
+        await CrawlSubPagesBFS(pageResult, ct);
+
+    }
+    private async Task CrawlSubPagesBFS(CrawlResult pageResult, CancellationToken ct)
+    {
+        Queue<CrawlResult> queue = new Queue<CrawlResult>();
+        queue.Enqueue(pageResult);
+
+        while (queue.Count > 0)
+        {
+            var currentResult = queue.Dequeue();
+
+            if (currentResult.Depth > 3) continue; // Max depth
+
+            foreach (var foundLink in currentResult.ResponseLinks)
             {
-                // Handle HTTP errors
-                crawlResult.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
-                Console.WriteLine("Error accessing page: " + url);
-                Console.WriteLine(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                crawlResult.StatusCode = -1; // An error occurred
-                Console.WriteLine("Error accessing page: " + url);
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                stopwatch.Stop();
-                crawlResult.ElapsedTime = stopwatch.ElapsedMilliseconds;
-                crawlResult.CrawlDate = DateTime.Now;
-                crawlResults.Add(crawlResult);
+                if (ct.IsCancellationRequested) break;
+
+                if (crawlResults.Any(x => x.baseUrl == foundLink)) continue;
+
+                int nextID = currentResult.Id + 1;
+                var subPageResult = await CrawlPage(foundLink, nextID, currentResult.Depth + 1, currentResult.baseUrl, ct);
+                subPageResult.PageFound = currentResult.baseUrl;
+                crawlResults.Add(subPageResult);
+
+                queue.Enqueue(subPageResult);
             }
         }
     }
 
-    [GeneratedRegex("<a\\s+(?:[^>]*?\\s+)?href=\"(.*?)\"", RegexOptions.IgnoreCase, "en-US")]
-    private static partial Regex FindLinksInHtml();
-    private string GetAbsoluteUrl(string link)
+    private async Task CrawlSubPage(CrawlResult pageResult, int CurrentID, CancellationToken ct)
     {
-        if (Uri.TryCreate(new Uri(domain), link, out var absoluteUri))
+        int depth = pageResult.Depth + 1;
+        
+        if(depth > 200) return; // Max depth
+
+        foreach (var foundLink in pageResult.ResponseLinks)
         {
-            return absoluteUri.AbsoluteUri;
-        }
-        return null;
-    }
+            if (ct.IsCancellationRequested) break;
 
-    private bool IsSameDomain(string url)
-    {
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
-        {
-            return false; // Invalid URL, not the same domain
-        }
-        string host = new Uri(domain).Host;
-        string targetHost = uri.Host;
+            if (crawlResults.Any(x => x.baseUrl == foundLink)) continue;
 
-        // Check if the target host matches the domain host and the URL has a valid path
-        return string.Equals(host, targetHost, StringComparison.OrdinalIgnoreCase)
-            && !string.IsNullOrWhiteSpace(uri.AbsolutePath)
-            && uri.AbsolutePath != "/";
-    }
-    private List<string> ParseLinks(string html)
-    {
-        var result = new List<string>();
-
-        // Use HtmlAgilityPack to parse the HTML and extract anchor tags with href attributes
-        var doc = new HtmlDocument();
-        doc.LoadHtml(html);
-
-        var links = doc.DocumentNode.Descendants("a")
-            .Select(a => a.GetAttributeValue("href", null))
-            .Where(link => !string.IsNullOrWhiteSpace(link));
-
-        foreach (string link in links)
-        {
-            string absoluteUrl = GetAbsoluteUrl(link);
-            if (IsSameDomain(absoluteUrl) && !visitedLinks.Contains(absoluteUrl) && !linksToParse.Contains(absoluteUrl)
-                && !absoluteUrl.StartsWith("/cdn-cgi/"))
-            {
-                result.Add(absoluteUrl);
-            }
-        }
-
-        return result;
-    }
-
-    public async Task Crawl(CancellationToken ct = default)
-    {
-        linksToParse.Enqueue(domain); // Enqueue the starting domain
-        while (linksToParse.Count > 0)
-        {
-            string link = linksToParse.Dequeue();
-            await CrawlPage(link, 100, ct);
+            CurrentID++;
+            var subPageResult = await CrawlPage(foundLink, CurrentID, depth, pageResult.baseUrl, ct);
+            subPageResult.PageFound = pageResult.baseUrl;
+            crawlResults.Add(subPageResult);
+            await CrawlSubPage(subPageResult, CurrentID, ct);
         }
     }
 
@@ -147,11 +139,11 @@ public partial class SiteCrawler
     {
         using (var writer = new StreamWriter(filePath))
         {
-            await writer.WriteLineAsync("URL,Status Code,Elapsed Time,Crawl Date,Found Links");
+            await writer.WriteLineAsync("URL,Status Code,Elapsed Time,Crawl Date,Found Links,Id,Depth,PageFound");
 
             foreach (var result in crawlResults)
             {
-                var line = $"{result.Url},{result.StatusCode},{result.ElapsedTime},{result.CrawlDate},{result.FoundLinks.Count}";
+                var line = $"{result.baseUrl},{result.StatusCode},{result.ElapsedTime},{result.CrawlDate},{result.ResponseLinks.Count},{result.Id},{result.Depth},{result.PageFound}";
                 await writer.WriteLineAsync(line);
             }
         }
