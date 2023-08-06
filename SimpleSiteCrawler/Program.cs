@@ -4,21 +4,23 @@ using SimpleSiteCrawler.Models;
 using System.Collections;
 using System.Text;
 
-string domain = "https://travel.frogsfolly.com";
+string domain = "https://markhazleton.controlorigins.com";
 var serviceProvider = new ServiceCollection().AddHttpClient().BuildServiceProvider();
 var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-var client = httpClientFactory.CreateClient();
 
 Console.WriteLine($"Crawling: {domain}");
 
-var crawler = new SiteCrawler(domain,client);
+var crawler = new SiteCrawler(httpClientFactory, semaphoreMax:20);
 
-await crawler.Crawl(domain);
+var CrawlResults = await crawler.Crawl(domain);
 
 string domainName = SiteCrawlerHelpers.GetDomainName(domain);
 string fileName = $"{domainName}_crawled_links.csv";
 
-WriteToCsv<CrawlResult>(crawler.crawlResults, fileName);
+WriteToCsv<CrawlResult>(CrawlResults, fileName);
+
+Console.WriteLine($"{domain} finished with {CrawlResults.Count} URLs crawled");
+
 
 static void WriteToCsv<T>(IEnumerable<T> data, string filePath)
 {

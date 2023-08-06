@@ -1,34 +1,78 @@
 ﻿using SimpleSiteCrawler.Models;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace SimpleSiteCrawler.Helpers;
 
-public partial class SiteCrawler
+public class SiteCrawler
 {
-    public readonly List<CrawlResult> crawlResults;
-    private readonly HttpClient httpClient;
+    private static readonly ConcurrentQueue<CrawlResult> crawlList = new();
+    private static readonly object lockObj = new();
+    private static readonly HashSet<string> crawledUrls = new();
+    private static readonly ConcurrentDictionary<string, CrawlResult> resultsDict = new();
+    private readonly IHttpClientFactory httpClientFactory;
+    private int maxConcurrency = 10;
 
-    public SiteCrawler(string domain, HttpClient httpClient)
+    public SiteCrawler(IHttpClientFactory factory, int semaphoreMax)
     {
-        this.httpClient = httpClient;
-        crawlResults = new List<CrawlResult>();
+        httpClientFactory = factory;
+        this.maxConcurrency = semaphoreMax;
     }
 
-    private async Task<CrawlResult> CrawlPage(string url, int Id, int Depth, string fromUrl, CancellationToken ct = default)
+    private static bool AddCrawlResult(CrawlResult? result)
     {
-        var crawlResult = new CrawlResult(url)
+        if (result is null)
         {
-            Id = Id,
-            Depth = Depth,
-            PageFound = fromUrl
-            
-        };
+            return false;
+        }
+        lock (lockObj)
+        {
+            if (resultsDict.ContainsKey(result.baseUrl))
+            {
+                return false;
+            }
+            resultsDict[result.baseUrl] = result;
+
+            foreach (var foundUrl in result.ResponseLinks)
+            {
+                if (crawledUrls.Contains(foundUrl))
+                {
+                    continue;
+                }
+                if (resultsDict.ContainsKey(foundUrl))
+                {
+                    continue;
+                }
+
+                if (crawlList.Any(w => w.baseUrl == foundUrl))
+                {
+                    continue;
+                }
+
+                var newCrawl = new CrawlResult(foundUrl)
+                {
+                    Depth = result.Depth + 1,
+                    PageFound = result.baseUrl
+                };
+                crawlList.Enqueue(newCrawl);
+            }
+            Console.WriteLine($"C:ID:{result.Id} C:{resultsDict.Count:D5} Q:{crawlList.Count:D5} W:{result.SemaphoreWaitTimeMS:D5} T:{result.ElapsedTime:0,000} +++ Added Result: {result.baseUrl}");
+            return true;
+        }
+    }
+
+    private async Task CrawlPage(CrawlResult? crawlResult, SemaphoreSlim semaphore, CancellationToken ct = default)
+    {
+        if (crawlResult is null)
+        {
+            return;
+        }
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
         try
         {
-            var response = await httpClient.GetAsync(url, ct);
+            var response = await httpClientFactory.CreateClient("SiteCrawler").GetAsync(crawlResult.baseUrl, ct);
             crawlResult.StatusCode = (int)response.StatusCode;
 
             if (response.IsSuccessStatusCode)
@@ -42,14 +86,14 @@ public partial class SiteCrawler
             // Handle HTTP errors
             crawlResult.StatusCode = (int)ex.StatusCode;
             crawlResult.Errors.Add(ex.Message);
-            Console.WriteLine("Error accessing page: " + url);
+            crawlResult.Errors.Add("Error accessing page: " + crawlResult.baseUrl);
             Console.WriteLine(ex.Message);
         }
         catch (Exception ex)
         {
             crawlResult.StatusCode = -1; // An error occurred
             crawlResult.Errors.Add(ex.Message);
-            Console.WriteLine("Error accessing page: " + url);
+            crawlResult.Errors.Add("Error accessing page: " + crawlResult.baseUrl);
             Console.WriteLine(ex.Message);
         }
         finally
@@ -57,18 +101,82 @@ public partial class SiteCrawler
             stopwatch.Stop();
             crawlResult.ElapsedTime = stopwatch.ElapsedMilliseconds;
             crawlResult.CrawlDate = DateTime.Now;
+            if (!AddCrawlResult(crawlResult))
+            {
+                Console.WriteLine($"FAILED TO ADD: {crawlResult.Id:D4}:{crawlResult.Depth:D4}:{crawlResult.StatusCode} --> {GetPathFromUrl(crawlResult.baseUrl)} FAILED TO ADD");
+            }
+            semaphore.Release();
         }
-        Console.WriteLine($"{crawlResult.Id:D4}:{crawlResult.Depth:D4}:{crawlResult.StatusCode} --> {GetPathFromUrl(crawlResult.baseUrl)} found at {GetPathFromUrl(crawlResult.PageFound)}");
 
-        return crawlResult;
+        return;
     }
-    public static string GetPathFromUrl(string fullUrl)
+
+    private async Task CrawlSubPagesBFS(SemaphoreSlim semaphore, CancellationToken ct)
+    {
+        List<Task> tasks = new();
+        try
+        {
+            while (true)
+            {
+
+                long SemaphoreWaitTimeMS = await AwaitSemaphoreAsync(semaphore, ct);
+                CrawlResult? crawlResult = GetNextCrawl();
+                if (crawlResult is null)
+                    break;
+
+                crawledUrls.Add(crawlResult.baseUrl);
+                crawlResult.SemaphoreWaitTimeMS = SemaphoreWaitTimeMS;
+
+                tasks.Add(CrawlPage(crawlResult, semaphore, ct));
+
+                if (tasks.Count >= maxConcurrency)
+                {
+                    Task finishedTask = await Task.WhenAny(tasks);
+                    tasks.Remove(finishedTask);
+                }
+
+            }
+            await Task.WhenAll(tasks);
+        }
+        finally
+        {
+        }
+    }
+    static async Task<long> AwaitSemaphoreAsync(SemaphoreSlim semaphore, CancellationToken ct = default)
+    {
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        await semaphore.WaitAsync(ct);
+        stopwatch.Stop();
+        return stopwatch.ElapsedTicks;
+    }
+    private static CrawlResult? GetNextCrawl()
+    {
+        CrawlResult? crawlNext;
+        lock (lockObj)
+        {
+            int loopCount = 0;
+            while (crawlList.TryDequeue(out crawlNext))
+            {
+                if (!crawledUrls.Contains(crawlNext.baseUrl))
+                {
+                    if (!resultsDict.ContainsKey(crawlNext.baseUrl))
+                    {
+                        crawlNext.Id = crawledUrls.Count + 1;
+                        return crawlNext;
+                    }
+                }
+                loopCount++;
+            }
+            return null;
+        }
+    }
+    private static string GetPathFromUrl(string fullUrl)
     {
         if (string.IsNullOrEmpty(fullUrl)) return string.Empty;
 
         try
         {
-            Uri uri = new Uri(fullUrl);
+            Uri uri = new(fullUrl);
             return uri.AbsolutePath;
         }
         catch (UriFormatException)
@@ -77,76 +185,21 @@ public partial class SiteCrawler
         }
     }
 
-    public async Task Crawl(string link, CancellationToken ct = default)
+    public async Task<ICollection<CrawlResult>> Crawl(string link, CancellationToken ct = default)
     {
-        int CrawlDepth = 1;
-        int CurrentID = 1;
-        var pageResult = await CrawlPage(link, CurrentID, CrawlDepth, link, ct);
-
-        crawlResults.Add(pageResult);
-
-        await CrawlSubPagesBFS(pageResult, ct);
-
-    }
-    private async Task CrawlSubPagesBFS(CrawlResult pageResult, CancellationToken ct)
-    {
-        Queue<CrawlResult> queue = new Queue<CrawlResult>();
-        queue.Enqueue(pageResult);
-
-        while (queue.Count > 0)
+        var crawlResult = new CrawlResult(link)
         {
-            var currentResult = queue.Dequeue();
+            Id = 1,
+            Depth = 1,
+            PageFound = link
+        };
+        SemaphoreSlim semaphore = new(maxConcurrency);
 
-            if (currentResult.Depth > 3) continue; // Max depth
+        crawlResult.SemaphoreWaitTimeMS = await AwaitSemaphoreAsync(semaphore);
+        await CrawlPage(crawlResult, semaphore, ct);
 
-            foreach (var foundLink in currentResult.ResponseLinks)
-            {
-                if (ct.IsCancellationRequested) break;
+        await CrawlSubPagesBFS(semaphore, ct);
 
-                if (crawlResults.Any(x => x.baseUrl == foundLink)) continue;
-
-                int nextID = currentResult.Id + 1;
-                var subPageResult = await CrawlPage(foundLink, nextID, currentResult.Depth + 1, currentResult.baseUrl, ct);
-                subPageResult.PageFound = currentResult.baseUrl;
-                crawlResults.Add(subPageResult);
-
-                queue.Enqueue(subPageResult);
-            }
-        }
-    }
-
-    private async Task CrawlSubPage(CrawlResult pageResult, int CurrentID, CancellationToken ct)
-    {
-        int depth = pageResult.Depth + 1;
-        
-        if(depth > 200) return; // Max depth
-
-        foreach (var foundLink in pageResult.ResponseLinks)
-        {
-            if (ct.IsCancellationRequested) break;
-
-            if (crawlResults.Any(x => x.baseUrl == foundLink)) continue;
-
-            CurrentID++;
-            var subPageResult = await CrawlPage(foundLink, CurrentID, depth, pageResult.baseUrl, ct);
-            subPageResult.PageFound = pageResult.baseUrl;
-            crawlResults.Add(subPageResult);
-            await CrawlSubPage(subPageResult, CurrentID, ct);
-        }
-    }
-
-    public async Task ExportToCSV(string filePath)
-    {
-        using (var writer = new StreamWriter(filePath))
-        {
-            await writer.WriteLineAsync("URL,Status Code,Elapsed Time,Crawl Date,Found Links,Id,Depth,PageFound");
-
-            foreach (var result in crawlResults)
-            {
-                var line = $"{result.baseUrl},{result.StatusCode},{result.ElapsedTime},{result.CrawlDate},{result.ResponseLinks.Count},{result.Id},{result.Depth},{result.PageFound}";
-                await writer.WriteLineAsync(line);
-            }
-        }
-        Console.WriteLine($"Crawl results with {crawlResults.Count} pages exported to: {filePath}");
+        return resultsDict.Values;
     }
 }

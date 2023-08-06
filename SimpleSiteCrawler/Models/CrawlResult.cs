@@ -4,15 +4,6 @@ namespace SimpleSiteCrawler.Models;
 
 public class CrawlResult
 {
-    public int Id { get; set; }
-    public int Depth { get; set; }
-    public string baseUrl { get; }
-    public int StatusCode { get; set; }
-    public double ElapsedTime { get; set; }
-    public DateTime CrawlDate { get; set; }
-    public List<string> ResponseLinks { get; } = new List<string>();
-    public List<String> Errors { get; set; } = new List<string>();
-    public string PageFound { get; set; }
 
     public CrawlResult(string url)
     {
@@ -120,6 +111,17 @@ public class CrawlResult
         }
         return;
     }
+
+    public string baseUrl { get; }
+    public DateTime CrawlDate { get; set; }
+    public int Depth { get; set; }
+    public double ElapsedTime { get; set; }
+    public List<String> Errors { get; set; } = new List<string>();
+    public int Id { get; set; }
+    public string PageFound { get; set; }
+    public List<string> ResponseLinks { get; } = new List<string>();
+    public int StatusCode { get; set; }
+    public long SemaphoreWaitTimeMS { get; set; }
 
 }
 
