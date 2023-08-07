@@ -10,7 +10,7 @@ var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
 
 Console.WriteLine($"Crawling: {domain}");
 
-var crawler = new SiteCrawler(httpClientFactory, semaphoreMax:20);
+var crawler = new SiteCrawler(httpClientFactory, semaphoreMax: 20);
 
 var CrawlResults = await crawler.Crawl(domain);
 
@@ -20,6 +20,8 @@ string fileName = $"{domainName}_crawled_links.csv";
 WriteToCsv<CrawlResult>(CrawlResults, fileName);
 
 Console.WriteLine($"{domain} finished with {CrawlResults.Count} URLs crawled");
+
+crawler.DisplayUrlTree(domain,1);
 
 
 static void WriteToCsv<T>(IEnumerable<T> data, string filePath)

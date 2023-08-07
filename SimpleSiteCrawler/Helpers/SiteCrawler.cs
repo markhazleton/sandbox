@@ -4,12 +4,14 @@ using System.Diagnostics;
 
 namespace SimpleSiteCrawler.Helpers;
 
-public class SiteCrawler
+public class SiteCrawler 
 {
+    private static readonly HashSet<string> crawledUrls = new();
+
     private static readonly ConcurrentQueue<CrawlResult> crawlList = new();
     private static readonly object lockObj = new();
-    private static readonly HashSet<string> crawledUrls = new();
     private static readonly ConcurrentDictionary<string, CrawlResult> resultsDict = new();
+
     private readonly IHttpClientFactory httpClientFactory;
     private int maxConcurrency = 10;
 
@@ -59,6 +61,13 @@ public class SiteCrawler
             Console.WriteLine($"C:ID:{result.Id} C:{resultsDict.Count:D5} Q:{crawlList.Count:D5} W:{result.SemaphoreWaitTimeMS:D5} T:{result.ElapsedTime:0,000} +++ Added Result: {result.baseUrl}");
             return true;
         }
+    }
+    static async Task<long> AwaitSemaphoreAsync(SemaphoreSlim semaphore, CancellationToken ct = default)
+    {
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        await semaphore.WaitAsync(ct);
+        stopwatch.Stop();
+        return stopwatch.ElapsedTicks;
     }
 
     private async Task CrawlPage(CrawlResult? crawlResult, SemaphoreSlim semaphore, CancellationToken ct = default)
@@ -142,12 +151,13 @@ public class SiteCrawler
         {
         }
     }
-    static async Task<long> AwaitSemaphoreAsync(SemaphoreSlim semaphore, CancellationToken ct = default)
+
+    private CrawlResult? GetCrawlFromUrl(string url)
     {
-        Stopwatch stopwatch = Stopwatch.StartNew();
-        await semaphore.WaitAsync(ct);
-        stopwatch.Stop();
-        return stopwatch.ElapsedTicks;
+        if (crawledUrls.Contains(url)) return null;
+        crawledUrls.Add(url);
+        resultsDict.TryGetValue(url, out var result);
+        return result;
     }
     private static CrawlResult? GetNextCrawl()
     {
@@ -170,7 +180,7 @@ public class SiteCrawler
             return null;
         }
     }
-    private static string GetPathFromUrl(string fullUrl)
+    private static string GetPathFromUrl(string? fullUrl)
     {
         if (string.IsNullOrEmpty(fullUrl)) return string.Empty;
 
@@ -201,5 +211,35 @@ public class SiteCrawler
         await CrawlSubPagesBFS(semaphore, ct);
 
         return resultsDict.Values;
+    }
+    public void DisplayUrl(string url, int level)
+    {
+        string indentation = new(' ', level * 4);
+        var node = GetCrawlFromUrl(url);
+
+        Console.WriteLine($"{indentation}{GetPathFromUrl(node?.baseUrl)}");
+
+        foreach (var child in node?.ResponseLinks ?? new List<string>())
+        {
+            if (crawledUrls.Contains(child)) continue;
+
+            DisplayUrl(child, level + 1);
+        }
+    }
+
+    public void DisplayUrlTree(string url, int level)
+    {
+        crawledUrls.Clear();
+        string indentation = new(' ', level * 4);
+        var node = GetCrawlFromUrl(url);
+
+        Console.WriteLine($"{indentation}{node?.baseUrl}");
+
+        foreach (var child in node?.ResponseLinks ?? new List<string>())
+        {
+            if (crawledUrls.Contains(child)) continue;
+
+            DisplayUrl(child, level + 1);
+        }
     }
 }
