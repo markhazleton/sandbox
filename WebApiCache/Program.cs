@@ -15,7 +15,7 @@ app.MapGet("/weatherforecast/", () =>
         {
             return await WeatherForecast.GetWeatherForecastListAsync();
         }, 
-        5);
+        10);
 });
 app.UseSwaggerUI();
 app.Run();

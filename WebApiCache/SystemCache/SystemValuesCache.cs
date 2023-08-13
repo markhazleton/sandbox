@@ -6,6 +6,7 @@ public static class SystemValuesCache
 {
     private static readonly MemoryCache _cache;
     private static readonly object LockObject = new();
+    private static bool CacheRefreshing = false;
     static SystemValuesCache()
     {
         _cache ??= new MemoryCache("WebApiCache");
@@ -17,12 +18,15 @@ public static class SystemValuesCache
         try
         {
             if (cachedValues.Data.Count > 1)
+            {
                 return cachedValues;
+            }
         }
         finally
         {
             if (cachedValues.Data.Count == 0)
             {
+                Console.WriteLine($"EMPTY CACHE: Waiting for Weatherforecast");
                 Task.Run(async () =>
                 {
                     await UpdateCache(cacheKey, fetchDataFunction, cacheTimeInSeconds, cachedValues);
@@ -32,10 +36,19 @@ public static class SystemValuesCache
             {
                 if (DateTime.Now - cachedValues.LastUpdateTime > TimeSpan.FromSeconds(cacheTimeInSeconds))
                 {
-                    Task.Run(async () =>
+                    if (CacheRefreshing)
                     {
-                        await UpdateCache(cacheKey, fetchDataFunction, cacheTimeInSeconds, cachedValues);
-                    });
+                        Console.WriteLine($"SKIPPED REFRESH: CacheRefreshing: {CacheRefreshing}");
+                    }
+                    else
+                    {
+                        Task.Run(async () =>
+                        {
+                            Console.WriteLine($"START: CacheRefreshing: {CacheRefreshing}");
+                            await UpdateCache(cacheKey, fetchDataFunction, cacheTimeInSeconds, cachedValues);
+                            Console.WriteLine($"FINSHED: CacheRefreshing: {CacheRefreshing}");
+                        });
+                    }
                 }
             }
         }
@@ -44,8 +57,15 @@ public static class SystemValuesCache
 
     private static async Task UpdateCache<T>(string cacheKey, Func<Task<List<T>>> fetchDataFunction, double cacheTimeInSeconds, CachedData<T> cachedValues)
     {
+        lock (LockObject)
+        {
+            CacheRefreshing = true;
+        }
+
+
         var data = await fetchDataFunction();
         cachedValues.Data = data.ToList();
+        cachedValues.Counter++;
         cachedValues.LastUpdateTime = DateTime.Now;
         cachedValues.NextUpdateTime = cachedValues.LastUpdateTime.AddSeconds(cacheTimeInSeconds);
 
@@ -56,6 +76,7 @@ public static class SystemValuesCache
         lock (LockObject)
         {
             _cache.Set(cacheKey, cachedValues, cachePolicy);
+            CacheRefreshing = false;
         }
     }
 }

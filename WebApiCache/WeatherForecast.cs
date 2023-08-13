@@ -6,7 +6,7 @@ public record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
     {
         var summaries = new[]{    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
-        await Task.Delay(1000);
+        await Task.Delay(10000);
 
         return Enumerable.Range(1, 5).Select(index =>
             new WeatherForecast

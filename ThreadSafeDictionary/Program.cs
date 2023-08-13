@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-
-class Program
+﻿class Program
 {
     private static ConcurrentQueue<string> stringQueue = new ConcurrentQueue<string>();
 
