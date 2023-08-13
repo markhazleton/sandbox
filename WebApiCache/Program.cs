@@ -9,11 +9,13 @@ app.UseHttpsRedirection();
 
 app.MapGet("/weatherforecast/", () =>
 {
-    return SystemValuesCache.GetCachedData<WeatherForecast>("weatherforecast", async () =>
-    {
-        return await WeatherForecast.GetWeatherForecastListAsync();
-    }, 10);
+    return SystemValuesCache.GetCachedData<WeatherForecast>(
+        "weatherforecast",
+         async () => 
+        {
+            return await WeatherForecast.GetWeatherForecastListAsync();
+        }, 
+        5);
 });
 app.UseSwaggerUI();
 app.Run();
-

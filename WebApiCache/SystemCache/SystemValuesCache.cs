@@ -5,7 +5,6 @@ namespace WebApiCache.SystemCache;
 public static class SystemValuesCache
 {
     private static readonly MemoryCache _cache;
-    private static DateTime _lastUpdateTime = DateTime.MinValue;
     private static readonly object LockObject = new();
     static SystemValuesCache()
     {
@@ -14,32 +13,49 @@ public static class SystemValuesCache
 
     public static CachedData<T> GetCachedData<T>(string cacheKey, Func<Task<List<T>>> fetchDataFunction, double cacheTimeInSeconds)
     {
-        List<T> cachedValues = _cache.Get(cacheKey) as List<T> ?? new List<T>();
-
-        if (cachedValues.Count == 0 || DateTime.Now - _lastUpdateTime > TimeSpan.FromSeconds(cacheTimeInSeconds))
+        CachedData<T> cachedValues = _cache.Get(cacheKey) as CachedData<T> ?? new CachedData<T>();
+        try
         {
-            lock (LockObject)
+            if (cachedValues.Data.Count > 1)
+                return cachedValues;
+        }
+        finally
+        {
+            if (cachedValues.Data.Count == 0)
             {
                 Task.Run(async () =>
                 {
-                    var data = await fetchDataFunction();
-                    cachedValues.Clear();
-                    cachedValues.AddRange(data);
-                    var cachePolicy = new CacheItemPolicy
-                    {
-                        AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(cacheTimeInSeconds)
-                    };
-                    _cache.Set(cacheKey, cachedValues, cachePolicy);
-                    _lastUpdateTime = DateTime.Now;
+                    await UpdateCache(cacheKey, fetchDataFunction, cacheTimeInSeconds, cachedValues);
                 }).Wait();
             }
+            else
+            {
+                if (DateTime.Now - cachedValues.LastUpdateTime > TimeSpan.FromSeconds(cacheTimeInSeconds))
+                {
+                    Task.Run(async () =>
+                    {
+                        await UpdateCache(cacheKey, fetchDataFunction, cacheTimeInSeconds, cachedValues);
+                    });
+                }
+            }
         }
-        return new CachedData<T>()
-        {
-            Data = cachedValues,
-            LastUpdateTime = _lastUpdateTime,
-            NextUpdateTime = _lastUpdateTime.AddSeconds(cacheTimeInSeconds)
-        };
+        return cachedValues;
     }
 
+    private static async Task UpdateCache<T>(string cacheKey, Func<Task<List<T>>> fetchDataFunction, double cacheTimeInSeconds, CachedData<T> cachedValues)
+    {
+        var data = await fetchDataFunction();
+        cachedValues.Data = data.ToList();
+        cachedValues.LastUpdateTime = DateTime.Now;
+        cachedValues.NextUpdateTime = cachedValues.LastUpdateTime.AddSeconds(cacheTimeInSeconds);
+
+        var cachePolicy = new CacheItemPolicy
+        {
+            AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(cacheTimeInSeconds + 30)
+        };
+        lock (LockObject)
+        {
+            _cache.Set(cacheKey, cachedValues, cachePolicy);
+        }
+    }
 }
