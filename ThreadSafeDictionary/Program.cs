@@ -1,35 +1,43 @@
-﻿class Program
+﻿using ThreadSafeDictionary;
+
+PropertyBag<string, int> propertyBag = new();
+
+// Adding key-value pairs
+propertyBag.Add("Apple", 5);
+propertyBag.Add("Banana", 3);
+propertyBag.Add("Orange", 7);
+
+// Updating a value
+propertyBag["Banana"] = 10;
+
+// Displaying key-value pairs using GetList method
+List<string> keyValuePairList = propertyBag.GetList();
+Console.WriteLine("Key-Value Pairs:");
+foreach (string kvp in keyValuePairList)
 {
-    private static ConcurrentQueue<string> stringQueue = new ConcurrentQueue<string>();
+    Console.WriteLine(kvp);
+}
 
-    static void Main(string[] args)
-    {
-        Task task1 = Task.Run(() => EnqueueStrings("Thread 1"));
-        Task task2 = Task.Run(() => EnqueueStrings("Thread 2"));
+// Displaying key-value pairs using ToString method
+Console.WriteLine("\nPropertyBag Contents:");
+Console.WriteLine(propertyBag.ToString());
 
-        Task.WhenAll(task1, task2).Wait();
+// Accessing values using indexer
+Console.WriteLine("\nValue for key 'Apple': " + propertyBag["Apple"]);
+Console.WriteLine("Value for key 'Banana': " + propertyBag["Banana"]);
+Console.WriteLine("Value for key 'Grapes': " + propertyBag["Grapes"]); // Key not present
 
-        ProcessQueue();
+// Adding a dictionary
+Dictionary<string, int> additionalPairs = new()
+{
+            { "Peach", 8 },
+            { "Cherry", 4 }
+        };
+propertyBag.Add(additionalPairs);
 
-        foreach (var item in stringQueue)
-        {
-            Console.WriteLine($"Item: {item}");
-        }
-    }
-
-    static void EnqueueStrings(string threadName)
-    {
-        for (int i = 0; i < 10; i++)
-        {
-            stringQueue.Enqueue($"{threadName} - Item {i}");
-        }
-    }
-
-    static void ProcessQueue()
-    {
-        while (stringQueue.TryDequeue(out string item))
-        {
-            Console.WriteLine($"Processed item: {item}");
-        }
-    }
+// Displaying updated key-value pairs
+Console.WriteLine("\nUpdated Key-Value Pairs:");
+foreach (string kvp in propertyBag.GetList())
+{
+    Console.WriteLine(kvp);
 }
