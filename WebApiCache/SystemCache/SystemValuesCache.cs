@@ -5,11 +5,36 @@ namespace WebApiCache.SystemCache;
 public static class SystemValuesCache
 {
     private static readonly MemoryCache _cache;
-    private static readonly object LockObject = new();
     private static bool CacheRefreshing = false;
+    private static readonly object LockObject = new();
+
     static SystemValuesCache()
     {
         _cache ??= new MemoryCache("WebApiCache");
+    }
+
+    private static async Task UpdateCache<T>(string cacheKey, Func<Task<List<T>>> fetchDataFunction, double cacheTimeInSeconds, CachedData<T> cachedValues)
+    {
+        lock (LockObject)
+        {
+            CacheRefreshing = true;
+        }
+        var data = await fetchDataFunction();
+        cachedValues.Key = cacheKey;
+        cachedValues.Data = data.ToList();
+        cachedValues.Counter++;
+        cachedValues.LastUpdateTime = DateTime.Now;
+        cachedValues.NextUpdateTime = cachedValues.LastUpdateTime.AddSeconds(cacheTimeInSeconds);
+
+        var cachePolicy = new CacheItemPolicy
+        {
+            AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(cacheTimeInSeconds + 30)
+        };
+        lock (LockObject)
+        {
+            _cache.Set(cacheKey, cachedValues, cachePolicy);
+            CacheRefreshing = false;
+        }
     }
 
     public static CachedData<T> GetCachedData<T>(string cacheKey, Func<Task<List<T>>> fetchDataFunction, double cacheTimeInSeconds)
@@ -53,30 +78,5 @@ public static class SystemValuesCache
             }
         }
         return cachedValues;
-    }
-
-    private static async Task UpdateCache<T>(string cacheKey, Func<Task<List<T>>> fetchDataFunction, double cacheTimeInSeconds, CachedData<T> cachedValues)
-    {
-        lock (LockObject)
-        {
-            CacheRefreshing = true;
-        }
-
-
-        var data = await fetchDataFunction();
-        cachedValues.Data = data.ToList();
-        cachedValues.Counter++;
-        cachedValues.LastUpdateTime = DateTime.Now;
-        cachedValues.NextUpdateTime = cachedValues.LastUpdateTime.AddSeconds(cacheTimeInSeconds);
-
-        var cachePolicy = new CacheItemPolicy
-        {
-            AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(cacheTimeInSeconds + 30)
-        };
-        lock (LockObject)
-        {
-            _cache.Set(cacheKey, cachedValues, cachePolicy);
-            CacheRefreshing = false;
-        }
     }
 }
