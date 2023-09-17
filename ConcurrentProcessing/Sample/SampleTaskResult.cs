@@ -1,17 +1,15 @@
 ﻿using ConcurrentProcessing.Concurrent;
 
-class MyTask : ConcurrentProcessorModel
+namespace ConcurrentProcessing.Sample;
+
+public class SampleTaskResult : ConcurrentProcessorModel
 {
-    public MyTask(ConcurrentProcessorModel model)
+    public SampleTaskResult(ConcurrentProcessorModel model)
     {
         TaskId = model.TaskId;
         TaskCount = model.TaskCount;
-        WaitMS = model.WaitMS;
+        WaitTicks = model.WaitTicks;
         SemaphoreCount = model.SemaphoreCount;
         SemaphoreWait = model.SemaphoreWait;
     }
-
 }
-
-
-
