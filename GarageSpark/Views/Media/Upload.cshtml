@@ -1,0 +1,210 @@
+@model MediaUploadViewModel
+@{
+    ViewData["Title"] = "Upload Media Files";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="d-flex align-items-center mb-4">
+            <a asp-action="Index" class="btn btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h1><i class="bi bi-upload text-primary"></i> Upload Media Files</h1>
+                <p class="text-muted mb-0">Upload images and documents to your media library</p>
+            </div>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                <h6><i class="bi bi-exclamation-triangle"></i> Please fix the following errors:</h6>
+                <div asp-validation-summary="All" class="mb-0"></div>
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Upload" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    <!-- File Upload Section -->
+                    <div class="mb-4">
+                        <label asp-for="File" class="form-label">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Select File
+                        </label>
+                        <input asp-for="File" class="form-control" accept="image/*,.pdf,.doc,.docx" />
+                        <span asp-validation-for="File" class="text-danger"></span>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i>
+                            Supported formats: Images (JPG, PNG, GIF, WebP), Documents (PDF, DOC, DOCX). Maximum size:
+                            10MB.
+                        </div>
+                    </div>
+
+                    <!-- File Preview (will be populated by JavaScript) -->
+                    <div id="filePreview" class="mb-4 d-none">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <img id="previewImage" class="img-fluid rounded" style="max-height: 200px;" />
+                                <div id="previewText" class="mt-2">
+                                    <i class="bi bi-file-earmark display-4 text-muted"></i>
+                                    <p id="fileName" class="mt-2 mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metadata Section -->
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label asp-for="Alt" class="form-label">
+                                <i class="bi bi-text-left"></i> Alt Text
+                            </label>
+                            <input asp-for="Alt" class="form-control"
+                                placeholder="Describe the image for accessibility..." />
+                            <span asp-validation-for="Alt" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="bi bi-universal-access"></i>
+                                Alt text helps screen readers and improves SEO. Describe what the image shows.
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label asp-for="Caption" class="form-label">
+                                <i class="bi bi-chat-text"></i> Caption
+                            </label>
+                            <input asp-for="Caption" class="form-control"
+                                placeholder="Optional caption for the media..." />
+                            <span asp-validation-for="Caption" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                Caption will be displayed with the media when used on the site.
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label asp-for="Description" class="form-label">
+                                <i class="bi bi-card-text"></i> Description
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="3"
+                                placeholder="Detailed description of the media file..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                Internal description for organization and search purposes.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input asp-for="IsPublic" class="form-check-input" />
+                                <label asp-for="IsPublic" class="form-check-label">
+                                    <i class="bi bi-globe"></i> Make this file public
+                                </label>
+                                <span asp-validation-for="IsPublic" class="text-danger"></span>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    Public files can be accessed directly via URL.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Upload File
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Upload Guidelines -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Upload Guidelines</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-check-circle text-success"></i> Recommended</h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-dot"></i> Use descriptive filenames</li>
+                            <li><i class="bi bi-dot"></i> Optimize images before upload</li>
+                            <li><i class="bi bi-dot"></i> Include alt text for accessibility</li>
+                            <li><i class="bi bi-dot"></i> Use web-friendly formats (JPEG, PNG, WebP)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-exclamation-triangle text-warning"></i> File Limits</h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-dot"></i> Maximum file size: 10MB</li>
+                            <li><i class="bi bi-dot"></i> Images: JPG, PNG, GIF, WebP, SVG</li>
+                            <li><i class="bi bi-dot"></i> Documents: PDF, DOC, DOCX</li>
+                            <li><i class="bi bi-dot"></i> No executable files allowed</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // File preview functionality
+        document.getElementById('File').addEventListener('change', function (e)
+        {
+            const file = e.target.files[0];
+            const preview = document.getElementById('filePreview');
+            const previewImage = document.getElementById('previewImage');
+            const previewText = document.getElementById('previewText');
+            const fileName = document.getElementById('fileName');
+
+            if (file)
+            {
+                preview.classList.remove('d-none');
+                fileName.textContent = file.name;
+
+                if (file.type.startsWith('image/'))
+                {
+                    const reader = new FileReader();
+                    reader.onload = function (e)
+                    {
+                        previewImage.src = e.target.result;
+                        previewImage.classList.remove('d-none');
+                        previewText.classList.add('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                } else
+                {
+                    previewImage.classList.add('d-none');
+                    previewText.classList.remove('d-none');
+                }
+            } else
+            {
+                preview.classList.add('d-none');
+            }
+        });
+
+        // Auto-generate alt text from filename
+        document.getElementById('File').addEventListener('change', function (e)
+        {
+            const file = e.target.files[0];
+            const altInput = document.getElementById('Alt');
+
+            if (file && !altInput.value)
+            {
+                // Convert filename to readable alt text
+                const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+                const altText = baseName.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                altInput.value = altText;
+            }
+        });
+    </script>
+}

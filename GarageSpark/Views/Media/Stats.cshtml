@@ -1,0 +1,240 @@
+@model MediaLibraryStatsViewModel
+@{
+    ViewData["Title"] = "Media Library Statistics";
+}
+
+<div class="d-flex align-items-center mb-4">
+    <a asp-action="Index" class="btn btn-outline-secondary me-3">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+        <h1><i class="bi bi-bar-chart text-primary"></i> Media Library Statistics</h1>
+        <p class="text-muted mb-0">Overview of your media library usage and metrics</p>
+    </div>
+</div>
+
+<!-- Overview Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-1">@Model.TotalFiles.ToString("N0")</h3>
+                        <p class="mb-0">Total Files</p>
+                    </div>
+                    <i class="bi bi-files display-4 opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-1">@Model.Images.ToString("N0")</h3>
+                        <p class="mb-0">Images</p>
+                    </div>
+                    <i class="bi bi-image display-4 opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-1">@Model.FormattedTotalSize</h3>
+                        <p class="mb-0">Total Size</p>
+                    </div>
+                    <i class="bi bi-hdd display-4 opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-1">@Model.Videos.ToString("N0")</h3>
+                        <p class="mb-0">Videos</p>
+                    </div>
+                    <i class="bi bi-play-circle display-4 opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Source Distribution -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-pie-chart"></i> Files by Source</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>
+                            <i class="bi bi-hdd text-success"></i>
+                            Local Files
+                        </span>
+                        <span>@Model.LocalFiles files (@((Model.TotalFiles > 0 ? (Model.LocalFiles * 100.0 / Model.TotalFiles) : 0).ToString("F1"))%)</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" 
+                             style="width: @((Model.TotalFiles > 0 ? (Model.LocalFiles * 100.0 / Model.TotalFiles) : 0).ToString("F1"))%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>
+                            <i class="bi bi-cloud text-info"></i>
+                            Unsplash
+                        </span>
+                        <span>@Model.UnsplashFiles files (@((Model.TotalFiles > 0 ? (Model.UnsplashFiles * 100.0 / Model.TotalFiles) : 0).ToString("F1"))%)</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info" 
+                             style="width: @((Model.TotalFiles > 0 ? (Model.UnsplashFiles * 100.0 / Model.TotalFiles) : 0).ToString("F1"))%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>
+                            <i class="bi bi-link-45deg text-secondary"></i>
+                            External
+                        </span>
+                        <span>@Model.ExternalFiles files (@((Model.TotalFiles > 0 ? (Model.ExternalFiles * 100.0 / Model.TotalFiles) : 0).ToString("F1"))%)</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-secondary" 
+                             style="width: @((Model.TotalFiles > 0 ? (Model.ExternalFiles * 100.0 / Model.TotalFiles) : 0).ToString("F1"))%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Type Distribution -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-file-earmark-text"></i> Files by Type</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>
+                            <i class="bi bi-image text-primary"></i>
+                            Images
+                        </span>
+                        <span class="badge bg-primary">@Model.Images</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-primary" 
+                             style="width: @((Model.TotalFiles > 0 ? (Model.Images * 100.0 / Model.TotalFiles) : 0).ToString("F1"))%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>
+                            <i class="bi bi-play-circle text-success"></i>
+                            Videos
+                        </span>
+                        <span class="badge bg-success">@Model.Videos</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" 
+                             style="width: @((Model.TotalFiles > 0 ? (Model.Videos * 100.0 / Model.TotalFiles) : 0).ToString("F1"))%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>
+                            <i class="bi bi-file-earmark text-warning"></i>
+                            Documents
+                        </span>
+                        <span class="badge bg-warning text-dark">@Model.Documents</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-warning" 
+                             style="width: @((Model.TotalFiles > 0 ? (Model.Documents * 100.0 / Model.TotalFiles) : 0).ToString("F1"))%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-md-4 offset-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-activity"></i> Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Upload" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Upload New Files
+                    </a>
+                    <a asp-action="Unsplash" class="btn btn-outline-primary">
+                        <i class="bi bi-search"></i> Browse Unsplash
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-grid-3x3-gap"></i> View All Media
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Insights -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Library Overview</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <div class="h4 text-primary">@((Model.TotalFiles > 0 ? (Model.Images * 100.0 / Model.TotalFiles) : 0).ToString("F0"))%</div>
+                            <div class="text-muted small">Images</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <div class="h4 text-success">@((Model.TotalFiles > 0 ? (Model.Videos * 100.0 / Model.TotalFiles) : 0).ToString("F0"))%</div>
+                            <div class="text-muted small">Videos</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <div class="h4 text-info">@Model.UnsplashFiles</div>
+                            <div class="text-muted small">From Unsplash</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="h4 text-warning">@Model.FormattedTotalSize</div>
+                        <div class="text-muted small">Total Storage</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

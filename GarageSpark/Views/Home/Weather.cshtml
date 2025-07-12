@@ -1,0 +1,111 @@
+@{
+    ViewData["Title"] = "Weather Demo";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2>🌤️ Weather API Demo</h2>
+            <p class="lead">Demonstrating HTTP GET requests with WebSpark.HttpClientUtility</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <form method="get" action="@Url.Action("Weather", "Home")">
+                <div class="input-group">
+                    <input type="text" name="city" class="form-control" placeholder="Enter city name"
+                        value="@ViewBag.City">
+                    <button class="btn btn-primary" type="submit">Get Weather</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">← Back to Home</a>
+        </div>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">
+            <h5>❌ Error</h5>
+            <p>@ViewBag.Error</p>
+            <p><small>Note: This demo uses a mock weather API endpoint. In a real application, you would use a valid API
+                    key.</small></p>
+        </div>
+    }
+
+    @if (ViewBag.WeatherData != null)
+    {
+        var weather = ViewBag.WeatherData as GarageSpark.Models.WeatherData;
+        if (weather != null)
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">📍 Location: @weather.Name</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">@weather.Sys.Country</h6>
+                            <p class="card-text">
+                                <strong>Temperature:</strong> @weather.Main.Temp°C<br>
+                                <strong>Feels Like:</strong> @weather.Main.FeelsLike°C<br>
+                                <strong>Min/Max:</strong> @weather.Main.TempMin°C / @weather.Main.TempMax°C
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">🌦️ Conditions</h5>
+                            @if (weather.Weather.Any())
+                            {
+                                <p class="card-text">
+                                    <strong>@weather.Weather.First().Main:</strong> @weather.Weather.First().Description<br>
+                                    <strong>Humidity:</strong> @weather.Main.Humidity%<br>
+                                    <strong>Pressure:</strong> @weather.Main.Pressure hPa<br>
+                                    <strong>Wind Speed:</strong> @weather.Wind.Speed m/s
+                                </p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else if (ViewBag.Error == null)
+    {
+        <div class="alert alert-info">
+            <h5>ℹ️ Instructions</h5>
+            <p>Enter a city name above to get weather data. This demonstrates:</p>
+            <ul>
+                <li>HTTP GET requests using WebSpark.HttpClientUtility</li>
+                <li>Response caching (5 minutes)</li>
+                <li>Automatic telemetry and logging</li>
+                <li>Correlation ID tracking</li>
+                <li>Structured error handling</li>
+            </ul>
+        </div>
+    }
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6>🔧 Technical Details</h6>
+                    <ul class="list-unstyled">
+                        <li>• <strong>Caching:</strong> Results are cached for 5 minutes</li>
+                        <li>• <strong>Telemetry:</strong> Request duration and correlation IDs are automatically logged
+                        </li>
+                        <li>• <strong>Error Handling:</strong> Structured error responses with detailed logging</li>
+                        <li>• <strong>User-Agent:</strong> Custom user agent header is sent with requests</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+                       
+                                                                                                                                               
+                        

@@ -1,0 +1,115 @@
+@{
+    ViewData["Title"] = "Posts Demo";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2>📝 Posts API Demo</h2>
+            <p class="lead">Demonstrating HTTP GET requests with JSONPlaceholder API</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <button class="btn btn-primary" onclick="window.location.reload()">🔄 Refresh Posts</button>
+        </div>
+        <div class="col-md-4">
+            <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">← Back to Home</a>
+        </div>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">
+            <h5>❌ Error</h5>
+            <p>@ViewBag.Error</p>
+        </div>
+    }
+
+    @if (ViewBag.Posts != null)
+    {
+        var posts = ViewBag.Posts as List<GarageSpark.Models.PostData>;
+        if (posts != null)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-success">
+                        <h5>✅ Success</h5>
+                        <p>Retrieved @posts.Count posts from JSONPlaceholder API with WebSpark.HttpClientUtility</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                @foreach (var post in posts)
+                {
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Post #@post.Id</h6>
+                                <h6 class="card-subtitle mb-2 text-muted">User: @post.UserId</h6>
+                                <h5 class="card-title">@post.Title</h5>
+                                <p class="card-text">@post.Body</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+    else if (ViewBag.Error == null)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6>🔧 Technical Details</h6>
+                    <ul class="list-unstyled">
+                        <li>• <strong>API:</strong> JSONPlaceholder (https://jsonplaceholder.typicode.com/)</li>
+                        <li>• <strong>Caching:</strong> Results are cached for 2 minutes</li>
+                        <li>• <strong>Limit:</strong> Retrieving 5 posts for demo purposes</li>
+                        <li>• <strong>Telemetry:</strong> Request duration and correlation IDs are automatically logged
+                        </li>
+                        <li>• <strong>Error Handling:</strong> Structured error responses with detailed logging</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6>🚀 Try Creating a Post</h6>
+                    <p>You can also test POST requests using the browser's developer console:</p>
+                    <pre class="bg-dark text-light p-3 rounded">
+<code>fetch('@Url.Action("CreatePost", "Home")', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        userId: 1,
+        title: 'Test Post',
+        body: 'This is a test post created via WebSpark.HttpClientUtility'
+    })
+})
+.then(response => response.json())
+.then(data => console.log(data));</code>
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                                                                                            
+                        

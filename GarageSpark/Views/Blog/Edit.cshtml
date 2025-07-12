@@ -1,0 +1,795 @@
+@using GarageSpark.ViewModels
+@model BlogPostFormViewModel
+@{
+    ViewData["Title"] = "Edit Post";
+}
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-action="Index" class="text-decoration-none">
+                            <i class="bi bi-house-door"></i> Blog Posts
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="text-decoration-none">@Model.Title</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold text-primary mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>Edit Blog Post
+                    </h1>
+                    <p class="text-muted mb-0">Modify and update your blog post content</p>
+                </div>
+
+                <div>
+                    @if (Model.IsPublished)
+                    {
+                        <span class="badge bg-success fs-6">
+                            <i class="bi bi-check-circle me-1"></i>Published
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark fs-6">
+                            <i class="bi bi-pencil me-1"></i>Draft
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Validation Summary -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger" role="alert">
+            <h6><i class="bi bi-exclamation-triangle me-2"></i>Please correct the following errors:</h6>
+            <div asp-validation-summary="All" class="mb-0"></div>
+        </div>
+    }
+
+    <form asp-action="Edit" method="post" id="editPostForm">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="row">
+            <!-- Main Content Area -->
+            <div class="col-lg-8">
+                <!-- Basic Information Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-info-circle me-2"></i>Post Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label asp-for="Title" class="form-label fw-semibold">
+                                    Title <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Title" class="form-control form-control-lg"
+                                    placeholder="Enter post title..." maxlength="200" />
+                                <span asp-validation-for="Title" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <span id="titleCount">0</span>/200 characters
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="Slug" class="form-label fw-semibold">
+                                    URL Slug
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="Slug" class="form-control"
+                                        placeholder="leave-blank-to-auto-generate" maxlength="100" />
+                                    <button type="button" id="generateSlug" class="btn btn-outline-secondary"
+                                        title="Generate from title">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="Slug" class="text-danger small"></span>
+                                <div class="form-text">
+                                    Leave blank to auto-generate from title • <span id="slugCount">0</span>/100
+                                    characters
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-2">
+                            <div class="col-12">
+                                <label asp-for="Excerpt" class="form-label fw-semibold">
+                                    Excerpt
+                                    <i class="bi bi-info-circle text-muted"
+                                        title="Short description for previews and SEO"></i>
+                                </label>
+                                <textarea asp-for="Excerpt" class="form-control" rows="2"
+                                    placeholder="Brief description of the post..." maxlength="300"></textarea>
+                                <span asp-validation-for="Excerpt" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <span id="excerptCount">0</span>/300 characters
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Editor Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-markdown me-2"></i>Content Editor
+                        </h5>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal"
+                                data-bs-target="#frontmatterHelp">
+                                <i class="bi bi-question-circle me-1"></i>Frontmatter Help
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="row g-0">
+                            <div class="col-12">
+                                <div class="p-3 border-bottom bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="small text-muted">
+                                            <i class="bi bi-markdown me-1"></i>
+                                            Write in Markdown with optional frontmatter
+                                        </div>
+                                        <div class="text-muted small">
+                                            Words: <span id="wordCount" class="fw-bold">0</span> |
+                                            Read time: <span id="readTime" class="fw-bold">0</span> min
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <textarea asp-for="Content" class="form-control border-0" rows="20"
+                                        placeholder="---&#10;title: Your Post Title&#10;author: Your Name&#10;tags: [tag1, tag2]&#10;---&#10;&#10;# Your Content Here&#10;&#10;Write your post content in **Markdown**..."
+                                        style="resize: vertical; min-height: 500px;"></textarea>
+                                    <span asp-validation-for="Content" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <button class="btn btn-link p-0 text-decoration-none fw-semibold" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#contentPreview">
+                            <i class="bi bi-eye me-2"></i>Content Preview
+                            <i class="bi bi-chevron-down ms-2"></i>
+                        </button>
+                    </div>
+                    <div class="collapse" id="contentPreview">
+                        <div class="card-body">
+                            <div id="previewArea" class="border rounded p-3 bg-light">
+                                <p class="text-muted mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Preview will appear here when you start typing content...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Publishing Options -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-send me-2"></i>Publishing
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" asp-for="IsPublished" id="publishSwitch">
+                            <label class="form-check-label fw-semibold" for="publishSwitch">
+                                Publish Post
+                            </label>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Make this post visible to the public
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-floppy me-2"></i>Update Post
+                            </button>
+
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-tags me-2"></i>Tags
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <label asp-for="TagNames" class="form-label fw-semibold">Post Tags</label>
+                        <input asp-for="TagNames" class="form-control" placeholder="tag1, tag2, tag3..." />
+                        <span asp-validation-for="TagNames" class="text-danger small"></span>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Separate multiple tags with commas
+                        </div>
+
+                        <div id="tagPreview" class="mt-2"></div>
+                    </div>
+                </div>
+
+                <!-- SEO Settings -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-search me-2"></i>SEO Settings
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="MetaTitle" class="form-label fw-semibold">
+                                Meta Title
+                            </label>
+                            <input asp-for="MetaTitle" class="form-control" placeholder="SEO-optimized title..."
+                                maxlength="60" />
+                            <span asp-validation-for="MetaTitle" class="text-danger small"></span>
+                            <div class="form-text">
+                                <span id="metaTitleCount">0</span>/60 characters (optimal: 50-60)
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MetaDescription" class="form-label fw-semibold">
+                                Meta Description
+                            </label>
+                            <textarea asp-for="MetaDescription" class="form-control" rows="3"
+                                placeholder="Brief description for search engines..." maxlength="160"></textarea>
+                            <span asp-validation-for="MetaDescription" class="text-danger small"></span>
+                            <div class="form-text">
+                                <span id="metaDescCount">0</span>/160 characters (optimal: 120-160)
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <!-- Cover Image Selection -->
+                            <label class="form-label fw-semibold required">Cover Image</label>
+                            <input asp-for="CoverMediaFileId" type="hidden" />
+                            <div class="border rounded p-3 bg-light">
+                                <div id="coverImagePreview" class="mb-2" style="display: none;">
+                                    <img id="coverImageThumbnail" src="" alt="Cover image" class="img-thumbnail"
+                                        style="max-height: 120px;">
+                                    <div class="mt-2">
+                                        <small id="coverImageName" class="text-muted"></small>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm"
+                                        onclick="openMediaPicker('cover')">
+                                        <i class="bi bi-images me-1"></i>Choose from Media Library
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="clearCoverImage()" style="display: none;" id="clearCoverBtn">
+                                        <i class="bi bi-x-circle me-1"></i>Clear
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-text">Select a cover image from your media library</div>
+                            <span asp-validation-for="CoverMediaFileId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Content Media Selection -->
+                        <div class="mb-0">
+                            <label class="form-label fw-semibold">Content Media</label>
+                            <input asp-for="SelectedMediaFileIdsString" type="hidden" />
+                            <div class="border rounded p-3 bg-light">
+                                <div id="selectedMediaPreview" class="mb-2"></div>
+                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                    onclick="openMediaPicker('content')">
+                                    <i class="bi bi-images me-1"></i>Add Media Files
+                                </button>
+                                <div class="form-text mt-2">Select media files to associate with this post</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post Statistics -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-graph-up me-2"></i>Post Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 text-center">
+                            <div class="col-6">
+                                <div class="fs-5 fw-bold text-primary" id="currentWordCount">@Model.WordCount</div>
+                                <small class="text-muted">Current Words</small>
+                            </div>
+                            <div class="col-6">
+                                <div class="fs-5 fw-bold text-info" id="currentReadTime">@Model.ReadingTimeMinutes</div>
+                                <small class="text-muted">Read Time (min)</small>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="small">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted">Created:</span>
+                                <span>@Model.CreatedAt.ToString("MMM dd, yyyy")</span>
+                            </div>
+
+                            @if (Model.UpdatedAt != Model.CreatedAt)
+                            {
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">Last Modified:</span>
+                                    <span>@Model.UpdatedAt.ToString("MMM dd, yyyy")</span>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.CreatedBy))
+                            {
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Author:</span>
+                                    <span>@Model.CreatedBy</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Frontmatter Help Modal -->
+<div class="modal fade" id="frontmatterHelp" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-question-circle me-2"></i>Frontmatter Guide
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Frontmatter is metadata about your post written in YAML format at the beginning of your content.</p>
+
+                <h6 class="fw-bold text-primary">Basic Structure:</h6>
+                <pre class="bg-dark text-light p-3 rounded"><code>---
+title: Your Post Title
+author: Your Name
+date: 2024-01-15
+tags: [technology, programming, tutorial]
+excerpt: Brief description of your post
+---
+
+# Your content starts here
+
+Write your post content in **Markdown**...</code></pre>
+
+                <h6 class="fw-bold text-primary mt-4">Common Properties:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>title</code></td>
+                                <td>String</td>
+                                <td>Post title (overrides form title)</td>
+                            </tr>
+                            <tr>
+                                <td><code>author</code></td>
+                                <td>String</td>
+                                <td>Author name</td>
+                            </tr>
+                            <tr>
+                                <td><code>date</code></td>
+                                <td>Date</td>
+                                <td>Publication date (YYYY-MM-DD)</td>
+                            </tr>
+                            <tr>
+                                <td><code>tags</code></td>
+                                <td>Array</td>
+                                <td>List of tags [tag1, tag2]</td>
+                            </tr>
+                            <tr>
+                                <td><code>excerpt</code></td>
+                                <td>String</td>
+                                <td>Post summary</td>
+                            </tr>
+                            <tr>
+                                <td><code>published</code></td>
+                                <td>Boolean</td>
+                                <td>Publication status (true/false)</td>
+                            </tr>
+                            <tr>
+                                <td><code>image</code></td>
+                                <td>String</td>
+                                <td>Cover image URL</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    <strong>Tip:</strong> Frontmatter values will override corresponding form fields when the post is
+                    processed.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function ()
+        {
+            // Character counters
+            function updateCharCount(input, counter, max)
+            {
+                const count = $(input).val().length;
+                $(counter).text(count);
+
+                if (count > max * 0.9)
+                {
+                    $(counter).parent().removeClass('text-muted').addClass('text-warning');
+                } else if (count > max)
+                {
+                    $(counter).parent().removeClass('text-muted text-warning').addClass('text-danger');
+                } else
+                {
+                    $(counter).parent().removeClass('text-warning text-danger').addClass('text-muted');
+                }
+            }
+
+            // Initialize character counters
+            $('#Title').on('input', function ()
+            {
+                updateCharCount(this, '#titleCount', 200);
+            }).trigger('input');
+
+            $('#Slug').on('input', function ()
+            {
+                updateCharCount(this, '#slugCount', 100);
+            }).trigger('input');
+
+            $('#Excerpt').on('input', function ()
+            {
+                updateCharCount(this, '#excerptCount', 300);
+            }).trigger('input');
+
+            $('#MetaTitle').on('input', function ()
+            {
+                updateCharCount(this, '#metaTitleCount', 60);
+            }).trigger('input');
+
+            $('#MetaDescription').on('input', function ()
+            {
+                updateCharCount(this, '#metaDescCount', 160);
+            }).trigger('input');
+
+            // Slug generation
+            $('#generateSlug').click(function ()
+            {
+                const title = $('#Title').val();
+                const slug = title.toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .trim('-');
+                $('#Slug').val(slug).trigger('input');
+            });
+
+            // Tag preview
+            $('#TagNames').on('input', function ()
+            {
+                const tags = $(this).val().split(',').map(tag => tag.trim()).filter(tag => tag);
+                const preview = tags.map(tag => `<span class="badge bg-secondary me-1">#${tag}</span>`).join('');
+                $('#tagPreview').html(preview);
+            }).trigger('input');
+
+            // Word count and reading time
+            function updateContentStats()
+            {
+                const content = $('#Content').val();
+                const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+                const readTime = Math.max(1, Math.ceil(words / 200));
+
+                $('#wordCount').text(words);
+                $('#readTime').text(readTime);
+                $('#currentWordCount').text(words);
+                $('#currentReadTime').text(readTime);
+            }
+
+            $('#Content').on('input', updateContentStats);
+            updateContentStats();
+
+            // Form validation enhancement
+            $('#editPostForm').on('submit', function (e)
+            {
+                const title = $('#Title').val().trim();
+
+                if (!title)
+                {
+                    e.preventDefault();
+                    alert('Please enter a title for your post.');
+                    $('#Title').focus();
+                    return false;
+                }
+            });
+
+            // Auto-save draft functionality (optional)
+            let autoSaveTimer;
+            $('#editPostForm input, #editPostForm textarea').on('input', function ()
+            {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(function ()
+                {
+                    // Could implement auto-save functionality here
+                    console.log('Auto-save triggered');
+                }, 30000); // 30 seconds
+            });
+
+            // Initialize existing media preview
+            initializeMediaPreview();
+        });
+
+        // Media picker functionality
+        let selectedMediaFiles = [];
+        let currentPickerType = '';
+
+        function initializeMediaPreview()
+        {
+            // Show existing cover image if set
+            const coverMediaFileId = $('#CoverMediaFileId').val();
+            if (coverMediaFileId)
+            {
+                updateCoverImagePreview(coverMediaFileId);
+            }
+
+            // Show existing selected media files
+            const selectedIds = $('#SelectedMediaFileIdsString').val();
+            if (selectedIds)
+            {
+                selectedMediaFiles = selectedIds.split(',').filter(id => id.trim());
+                updateContentMediaPreview();
+            }
+        }
+
+        function openMediaPicker(type)
+        {
+            currentPickerType = type;
+
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                                <div class="modal-dialog modal-xl">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                <i class="bi bi-images me-2"></i>Select Media Files
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                                            <div id="mediaGrid" class="row">
+                                                <div class="col-12 text-center">
+                                                    <div class="spinner-border" role="status">
+                                                        <span class="visually-hidden">Loading...</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <div class="me-auto">
+                                                <small class="text-muted">
+                                                    ${currentPickerType === 'cover' ? 'Select one image for cover' : 'Select multiple images for content'}
+                                                </small>
+                                            </div>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-primary" onclick="selectMedia()">
+                                                <i class="bi bi-check-lg me-1"></i>Select
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+
+            // Load media files
+            loadMediaFiles();
+
+            // Clean up modal on hide
+            modal.addEventListener('hidden.bs.modal', function ()
+            {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function loadMediaFiles()
+        {
+            fetch('/api/media')
+                .then(response => response.json())
+                .then(data =>
+                {
+                    const mediaGrid = document.getElementById('mediaGrid');
+                    mediaGrid.innerHTML = '';
+
+                    // Check if we have media files
+                    if (!data.mediaFiles || data.mediaFiles.length === 0)
+                    {
+                        mediaGrid.innerHTML = '<div class="col-12 text-center"><p class="text-muted">No media files found</p></div>';
+                        return;
+                    }
+
+                    data.mediaFiles.forEach(media =>
+                    {
+                        const mediaItem = document.createElement('div');
+                        mediaItem.className = 'col-md-3 mb-3';
+                        mediaItem.innerHTML = `
+                                            <div class="card media-item position-relative" data-id="${media.id}" onclick="toggleMediaSelection('${media.id}', this)">
+                                                <img src="${media.url}" alt="${media.alt || media.fileName}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                                <div class="card-body p-2">
+                                                    <small class="text-muted">${media.fileName}</small>
+                                                </div>
+                                            </div>
+                                        `;
+                        mediaGrid.appendChild(mediaItem);
+                    });
+                })
+                .catch(error =>
+                {
+                    console.error('Error loading media:', error);
+                    const mediaGrid = document.getElementById('mediaGrid');
+                    mediaGrid.innerHTML = '<div class="col-12 text-center"><p class="text-danger">Error loading media files</p></div>';
+                });
+        }
+
+        function toggleMediaSelection(mediaId, element)
+        {
+            if (currentPickerType === 'cover')
+            {
+                // For cover image, only allow single selection
+                document.querySelectorAll('.media-item').forEach(item => item.classList.remove('border-primary'));
+                element.classList.add('border-primary');
+                selectedMediaFiles = [mediaId];
+            } else
+            {
+                // For content media, allow multiple selection
+                if (element.classList.contains('border-primary'))
+                {
+                    element.classList.remove('border-primary');
+                    selectedMediaFiles = selectedMediaFiles.filter(id => id !== mediaId);
+                } else
+                {
+                    element.classList.add('border-primary');
+                    selectedMediaFiles.push(mediaId);
+                }
+            }
+        }
+
+        function selectMedia()
+        {
+            if (currentPickerType === 'cover' && selectedMediaFiles.length > 0)
+            {
+                document.getElementById('CoverMediaFileId').value = selectedMediaFiles[0];
+                updateCoverImagePreview(selectedMediaFiles[0]);
+            } else if (currentPickerType === 'content')
+            {
+                document.getElementById('SelectedMediaFileIdsString').value = selectedMediaFiles.join(',');
+                updateContentMediaPreview();
+            }
+
+            // Close modal
+            const modal = document.querySelector('.modal.show');
+            if (modal)
+            {
+                bootstrap.Modal.getInstance(modal).hide();
+            }
+        }
+
+        function updateCoverImagePreview(mediaId)
+        {
+            fetch(`/api/media/${mediaId}`)
+                .then(response => response.json())
+                .then(media =>
+                {
+                    document.getElementById('coverImageThumbnail').src = media.url;
+                    document.getElementById('coverImageName').textContent = media.fileName;
+                    document.getElementById('coverImagePreview').style.display = 'block';
+                    document.getElementById('clearCoverBtn').style.display = 'inline-block';
+                })
+                .catch(error => console.error('Error loading media:', error));
+        }
+
+        function updateContentMediaPreview()
+        {
+            const preview = document.getElementById('selectedMediaPreview');
+            if (selectedMediaFiles.length === 0)
+            {
+                preview.innerHTML = '<small class="text-muted">No media files selected</small>';
+                return;
+            }
+
+            preview.innerHTML = `<small class="text-muted">${selectedMediaFiles.length} media file(s) selected</small>`;
+        }
+
+        function clearCoverImage()
+        {
+            document.getElementById('CoverMediaFileId').value = '';
+            document.getElementById('coverImagePreview').style.display = 'none';
+            document.getElementById('clearCoverBtn').style.display = 'none';
+        }
+    </script>
+
+    <style>
+        /* Media picker styles */
+        .media-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent !important;
+        }
+
+        .media-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .media-item.border-primary {
+            border-color: #0d6efd !important;
+            box-shadow: 0 0 10px rgba(13, 110, 253, 0.3);
+            transform: scale(1.02);
+        }
+
+        .media-item.border-primary::after {
+            content: "✓";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #0d6efd;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+}

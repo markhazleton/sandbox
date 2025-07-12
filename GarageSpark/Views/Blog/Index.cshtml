@@ -1,0 +1,297 @@
+@model BlogPostPagedResultViewModel
+@{
+    ViewData["Title"] = "Blog Posts";
+}
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold text-primary">
+                        <i class="bi bi-file-text me-2"></i>Blog Posts
+                    </h1>
+                    <p class="text-muted">Manage your blog content with markdown and frontmatter</p>
+                </div>
+                <div>
+                    <a asp-action="Create" class="btn btn-primary btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>Create New Post
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-funnel me-2"></i>Search & Filter
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" asp-action="Index">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label asp-for="SearchCriteria.SearchTerm" class="form-label fw-semibold">
+                                    <i class="bi bi-search me-1"></i>Search Posts
+                                </label>
+                                <input asp-for="SearchCriteria.SearchTerm" class="form-control"
+                                    placeholder="Search titles, content, or tags...">
+                            </div>
+                            <div class="col-md-3">
+                                <label asp-for="SearchCriteria.Status" class="form-label fw-semibold">
+                                    <i class="bi bi-flag me-1"></i>Status
+                                </label>
+                                <select asp-for="SearchCriteria.Status" class="form-select"
+                                    asp-items="Html.GetEnumSelectList<BlogPostStatus>()">
+                                    <option value="">All Statuses</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label asp-for="SearchCriteria.SortBy" class="form-label fw-semibold">
+                                    <i class="bi bi-sort-down me-1"></i>Sort By
+                                </label>
+                                <select asp-for="SearchCriteria.SortBy" class="form-select"
+                                    asp-items="Html.GetEnumSelectList<BlogPostSortBy>()"></select>
+                            </div>
+                            <div class="col-md-2">
+                                <label asp-for="SearchCriteria.PageSize" class="form-label fw-semibold">
+                                    <i class="bi bi-list-ol me-1"></i>Per Page
+                                </label>
+                                <select asp-for="SearchCriteria.PageSize" class="form-select">
+                                    <option value="5">5 posts</option>
+                                    <option value="10">10 posts</option>
+                                    <option value="25">25 posts</option>
+                                    <option value="50">50 posts</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <label asp-for="SearchCriteria.FromDate" class="form-label fw-semibold">From
+                                            Date</label>
+                                        <input asp-for="SearchCriteria.FromDate" type="date" class="form-control">
+                                    </div>
+                                    <div class="col-6">
+                                        <label asp-for="SearchCriteria.ToDate" class="form-label fw-semibold">To
+                                            Date</label>
+                                        <input asp-for="SearchCriteria.ToDate" type="date" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="bi bi-search me-1"></i>Search
+                                </button>
+                                <a asp-action="Index" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-primary fs-6">
+                        <i class="bi bi-collection me-1"></i>@Model.TotalCount posts found
+                    </span>
+                </div>
+                <div>
+                    <a asp-action="Analytics" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-graph-up me-1"></i>View Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blog Posts Grid -->
+    <div class="row">
+        @if (Model.Posts.Any())
+        {
+            @foreach (var post in Model.Posts)
+            {
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        @if (!string.IsNullOrEmpty(post.CoverImageUrl))
+                        {
+                            <img src="@post.CoverImageUrl" class="card-img-top" style="height: 200px; object-fit: cover;"
+                                alt="@post.Title">
+                        }
+                        else
+                        {
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                                style="height: 200px;">
+                                <i class="bi bi-file-text text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                        }
+
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-2">
+                                @if (post.IsPublished)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1"></i>Published
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-pencil me-1"></i>Draft
+                                    </span>
+                                }
+                                @if (post.TagNames.Any())
+                                {
+                                    @foreach (var tag in post.TagNames.Take(2))
+                                    {
+                                        <span class="badge bg-secondary ms-1">@tag</span>
+                                    }
+                                    @if (post.TagNames.Count > 2)
+                                    {
+                                        <span class="badge bg-light text-dark ms-1">+@(post.TagNames.Count - 2) more</span>
+                                    }
+                                }
+                            </div>
+
+                            <h5 class="card-title fw-bold">@post.Title</h5>
+                            <p class="card-text text-muted flex-grow-1">@post.Excerpt</p>
+
+                            <div class="mt-auto">
+                                <small class="text-muted d-block mb-2">
+                                    <i class="bi bi-calendar me-1"></i>
+                                    @if (post.PublishedAt.HasValue)
+                                    {
+                                        @("Published " + post.PublishedAt.Value.ToString("MMM dd, yyyy"))
+                                    }
+                                    else
+                                    {
+                                        @("Created " + post.CreatedAt.ToString("MMM dd, yyyy"))
+                                    }
+                                </small>
+
+                                <div class="btn-group w-100" role="group">
+                                    <a asp-action="Details" asp-route-id="@post.Id" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-eye me-1"></i>View
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@post.Id" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-pencil me-1"></i>Edit
+                                    </a>
+                                    @if (!post.IsPublished)
+                                    {
+                                        <form asp-action="Publish" asp-route-id="@post.Id" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-success btn-sm">
+                                                <i class="bi bi-send me-1"></i>Publish
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="bi bi-file-text text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h3 class="text-muted">No blog posts found</h3>
+                    <p class="text-muted">Start creating amazing content with markdown and frontmatter!</p>
+                    <a asp-action="Create" class="btn btn-primary btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>Create Your First Post
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <nav aria-label="Blog posts pagination">
+                    <ul class="pagination justify-content-center">
+                        @if (Model.HasPreviousPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-searchTerm="@Model.SearchCriteria.SearchTerm"
+                                    asp-route-status="@Model.SearchCriteria.Status"
+                                    asp-route-tagId="@Model.SearchCriteria.TagId"
+                                    asp-route-fromDate="@Model.SearchCriteria.FromDate"
+                                    asp-route-toDate="@Model.SearchCriteria.ToDate"
+                                    asp-route-sortBy="@Model.SearchCriteria.SortBy"
+                                    asp-route-pageSize="@Model.SearchCriteria.PageSize" asp-route-page="@(Model.Page - 1)">
+                                    <i class="bi bi-chevron-left"></i> Previous
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span>
+                            </li>
+                        }
+
+                        @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+                        {
+                            @if (i == Model.Page)
+                            {
+                                <li class="page-item active">
+                                    <span class="page-link">@i</span>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index" asp-route-searchTerm="@Model.SearchCriteria.SearchTerm"
+                                        asp-route-status="@Model.SearchCriteria.Status"
+                                        asp-route-tagId="@Model.SearchCriteria.TagId"
+                                        asp-route-fromDate="@Model.SearchCriteria.FromDate"
+                                        asp-route-toDate="@Model.SearchCriteria.ToDate"
+                                        asp-route-sortBy="@Model.SearchCriteria.SortBy"
+                                        asp-route-pageSize="@Model.SearchCriteria.PageSize" asp-route-page="@i">@i</a>
+                                </li>
+                            }
+                        }
+
+                        @if (Model.HasNextPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-searchTerm="@Model.SearchCriteria.SearchTerm"
+                                    asp-route-status="@Model.SearchCriteria.Status"
+                                    asp-route-tagId="@Model.SearchCriteria.TagId"
+                                    asp-route-fromDate="@Model.SearchCriteria.FromDate"
+                                    asp-route-toDate="@Model.SearchCriteria.ToDate"
+                                    asp-route-sortBy="@Model.SearchCriteria.SortBy"
+                                    asp-route-pageSize="@Model.SearchCriteria.PageSize" asp-route-page="@(Model.Page + 1)">
+                                    Next <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">Next <i class="bi bi-chevron-right"></i></span>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    }
+</div>

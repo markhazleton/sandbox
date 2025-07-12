@@ -1,0 +1,413 @@
+@model BlogPostViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a asp-action="Index" class="text-decoration-none">
+                                    <i class="bi bi-house-door"></i> Blog Posts
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+                        </ol>
+                    </nav>
+
+                    <div class="mb-3">
+                        @if (Model.IsPublished)
+                        {
+                            <span class="badge bg-success fs-6 me-2">
+                                <i class="bi bi-check-circle me-1"></i>Published
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark fs-6 me-2">
+                                <i class="bi bi-pencil me-1"></i>Draft
+                            </span>
+                        }
+
+                        @foreach (var tag in Model.Tags)
+                        {
+                            <span class="badge bg-secondary me-1">#@tag.Name</span>
+                        }
+                    </div>
+
+                    <h1 class="display-5 fw-bold text-primary mb-2">@Model.Title</h1>
+
+                    @if (!string.IsNullOrEmpty(Model.Excerpt))
+                    {
+                        <p class="lead text-muted">@Model.Excerpt</p>
+                    }
+                </div>
+
+                <div class="ms-3">
+                    <div class="btn-group" role="group">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil me-1"></i>Edit
+                        </a>
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-gear me-1"></i>Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            @if (Model.IsPublished)
+                            {
+                                <li>
+                                    <form asp-action="Unpublish" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="bi bi-eye-slash me-2"></i>Unpublish
+                                        </button>
+                                    </form>
+                                </li>
+                            }
+                            else
+                            {
+                                <li>
+                                    <form asp-action="Publish" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="bi bi-send me-2"></i>Publish Now
+                                        </button>
+                                    </form>
+                                </li>
+                            }
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@Model.Id">
+                                    <i class="bi bi-trash me-2"></i>Delete
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Cover Image -->
+            @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+            {
+                <div class="mb-4">
+                    <img src="@Model.CoverImageUrl" class="img-fluid rounded shadow" alt="@Model.Title"
+                        style="max-height: 400px; width: 100%; object-fit: cover;">
+                </div>
+            }
+
+            <!-- Content Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-file-text me-2"></i>Content
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.ProcessedHtml))
+                    {
+                        <div class="content-area">
+                            @Html.Raw(Model.ProcessedHtml)
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(Model.Content))
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Content is in Markdown format. Process to see HTML output.
+                        </div>
+                        <pre class="bg-light p-3 rounded"><code>@Model.Content</code></pre>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-file-text text-muted mb-3" style="font-size: 3rem;"></i>
+                            <p class="text-muted">No content available</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Raw Markdown (Collapsible) -->
+            @if (!string.IsNullOrEmpty(Model.Content))
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <button class="btn btn-link p-0 text-decoration-none fw-semibold" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#rawMarkdown">
+                            <i class="bi bi-markdown me-2"></i>View Raw Markdown
+                            <i class="bi bi-chevron-down ms-2"></i>
+                        </button>
+                    </div>
+                    <div class="collapse" id="rawMarkdown">
+                        <div class="card-body">
+                            <pre class="bg-dark text-light p-3 rounded"><code>@Model.Content</code></pre>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Post Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Post Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="fs-4 fw-bold text-primary">@Model.WordCount</div>
+                                <small class="text-muted">Words</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="fs-4 fw-bold text-info">@Model.ReadingTimeMinutes</div>
+                                <small class="text-muted">Min Read</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="small">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">
+                                <i class="bi bi-link-45deg me-1"></i>Slug:
+                            </span>
+                            <code class="text-primary">@Model.Slug</code>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">
+                                <i class="bi bi-calendar-plus me-1"></i>Created:
+                            </span>
+                            <span>@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                        </div>
+
+                        @if (Model.UpdatedAt != Model.CreatedAt)
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">
+                                    <i class="bi bi-calendar-check me-1"></i>Updated:
+                                </span>
+                                <span>@Model.UpdatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                            </div>
+                        }
+
+                        @if (Model.PublishedAt.HasValue)
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">
+                                    <i class="bi bi-send me-1"></i>Published:
+                                </span>
+                                <span>@Model.PublishedAt.Value.ToString("MMM dd, yyyy HH:mm")</span>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.CreatedBy))
+                        {
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">
+                                    <i class="bi bi-person me-1"></i>Author:
+                                </span>
+                                <span>@Model.CreatedBy</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEO Information -->
+            @if (!string.IsNullOrEmpty(Model.MetaTitle) || !string.IsNullOrEmpty(Model.MetaDescription))
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-search me-2"></i>SEO Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(Model.MetaTitle))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted small">Meta Title:</label>
+                                <div class="p-2 bg-light rounded">@Model.MetaTitle</div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.MetaDescription))
+                        {
+                            <div class="mb-0">
+                                <label class="form-label fw-semibold text-muted small">Meta Description:</label>
+                                <div class="p-2 bg-light rounded">@Model.MetaDescription</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Frontmatter Data -->
+            @if (Model.FrontmatterData.Any())
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-code me-2"></i>Frontmatter Data
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var item in Model.FrontmatterData)
+                        {
+                            <div class="mb-2">
+                                <small class="text-muted fw-semibold">@item.Key:</small>
+                                <div class="text-break">
+                                    @if (item.Value is System.Collections.IEnumerable enumerable && item.Value is not string)
+                                    {
+                                        <span class="badge bg-secondary me-1" style="font-size: 0.8em;">
+                                            @string.Join(", ", enumerable.Cast<object>())
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <code class="text-primary">@item.Value</code>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Quick Actions -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightning me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if (Model.IsPublished)
+                        {
+                            <a href="/Blog/Post/@Model.Slug" target="_blank" class="btn btn-outline-primary">
+                                <i class="bi bi-eye me-2"></i>View Public Post
+                            </a>
+                        }
+
+                        <button type="button" class="btn btn-outline-secondary"
+                            onclick="copyToClipboard('@Model.Slug')">
+                            <i class="bi bi-clipboard me-2"></i>Copy Slug
+                        </button>
+
+                        <a asp-action="Index" class="btn btn-outline-info">
+                            <i class="bi bi-arrow-left me-2"></i>Back to All Posts
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function copyToClipboard(text)
+        {
+            navigator.clipboard.writeText(text).then(function ()
+            {
+                // Show a toast or alert
+                const toast = document.createElement('div');
+                toast.className = 'position-fixed top-0 end-0 m-3 alert alert-success alert-dismissible';
+                toast.innerHTML = '<i class="bi bi-check-circle me-2"></i>Slug copied to clipboard!';
+                document.body.appendChild(toast);
+
+                setTimeout(() =>
+                {
+                    toast.remove();
+                }, 3000);
+            });
+        }
+    </script>
+}
+
+<style>
+    .content-area {
+        line-height: 1.6;
+    }
+
+    .content-area h1,
+    .content-area h2,
+    .content-area h3,
+    .content-area h4,
+    .content-area h5,
+    .content-area h6 {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        color: #212529;
+    }
+
+    .content-area p {
+        margin-bottom: 1rem;
+    }
+
+    .content-area blockquote {
+        border-left: 4px solid #dee2e6;
+        padding-left: 1rem;
+        margin: 1.5rem 0;
+        color: #6c757d;
+    }
+
+    .content-area code {
+        background-color: #f8f9fa;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.25rem;
+        font-size: 0.875em;
+    }
+
+    .content-area pre {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+    }
+
+    .content-area table {
+        margin: 1.5rem 0;
+    }
+
+    .content-area img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+</style>
+
+                           
+                                
+                            
+                       
+                           
+                           
+        
+           
+               
+   
+   
+   
+   

@@ -1,0 +1,96 @@
+﻿@{
+    ViewData["Title"] = "GarageSpark - WebSpark Demo";
+}
+
+<div class="text-center">
+    <h1 class="display-4">GarageSpark</h1>
+    <p class="lead">Demonstrating WebSpark.HttpClientUtility and WebSpark.Bootswatch capabilities</p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">🌤️ Weather API Demo</h5>
+                <p class="card-text">
+                    Test HTTP GET requests with caching and telemetry using a weather API.
+                </p>
+                <a href="@Url.Action("Weather", "Home")" class="btn btn-primary">Get Weather Data</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">📝 Posts API Demo</h5>
+                <p class="card-text">
+                    Test HTTP GET requests with response caching using JSONPlaceholder API.
+                </p>
+                <a href="@Url.Action("Posts", "Home")" class="btn btn-success">Get Posts</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">🎨 Theme Switcher</h5>
+                <p class="card-text">
+                    Try different Bootstrap themes with light/dark mode support powered by WebSpark.Bootswatch.
+                </p>
+                <button class="btn btn-info" onclick="alert('Use the theme switcher in the top-right corner!')">Learn
+                    More</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">🚀 WebSpark.HttpClientUtility Features</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">✅ Simplified HTTP Client Operations</li>
+                    <li class="list-group-item">✅ Built-in Response Caching</li>
+                    <li class="list-group-item">✅ Automatic Telemetry & Logging</li>
+                    <li class="list-group-item">✅ Correlation IDs for Request Tracking</li>
+                    <li class="list-group-item">✅ Structured Error Handling</li>
+                    <li class="list-group-item">✅ Polly Integration for Resilience</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">🎨 WebSpark.Bootswatch Features</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">✅ 26+ Bootstrap Themes</li>
+                    <li class="list-group-item">✅ Light/Dark Mode Support</li>
+                    <li class="list-group-item">✅ Runtime Theme Switching</li>
+                    <li class="list-group-item">✅ Cookie Persistence</li>
+                    <li class="list-group-item">✅ Built-in Caching</li>
+                    <li class="list-group-item">✅ Easy Integration</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6>📚 About WebSpark.HttpClientUtility</h6>
+            <p class="mb-0">
+                This demo showcases the <strong>WebSpark.HttpClientUtility</strong> library - a robust and simplified
+                .NET HttpClient wrapper.
+                Learn more at <a href="https://www.nuget.org/packages/WebSpark.HttpClientUtility"
+                    target="_blank">NuGet</a> or
+                <a href="https://github.com/MarkHazleton/HttpClientUtility" target="_blank">GitHub</a>.
+            </p>
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,195 @@
+@model IEnumerable<MediaFileViewModel>
+@{
+    ViewData["Title"] = "Media Library";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-image text-primary"></i> Media Library</h1>
+        <p class="text-muted mb-0">Manage your local and Unsplash images</p>
+    </div>
+    <div class="btn-group" role="group">
+        <a asp-action="Upload" class="btn btn-primary">
+            <i class="bi bi-upload"></i> Upload Files
+        </a>
+        <a asp-action="Unsplash" class="btn btn-outline-primary">
+            <i class="bi bi-search"></i> Browse Unsplash
+        </a>
+        <a asp-action="Stats" class="btn btn-outline-secondary">
+            <i class="bi bi-bar-chart"></i> Statistics
+        </a>
+    </div>
+</div>
+
+<!-- Search and Filter Bar -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" name="searchTerm" value="@Context.Request.Query["searchTerm"]" placeholder="Search media files...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="source" class="form-select">
+                    <option value="">All Sources</option>
+                    <option value="Local">Local Files</option>
+                    <option value="Unsplash">Unsplash</option>
+                    <option value="External">External</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <div class="d-grid gap-2 d-md-flex">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Clear
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model?.Any() == true)
+{
+    <!-- Media Grid -->
+    <div class="row g-3" id="media-grid">
+        @foreach (var media in Model)
+        {
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card h-100">
+                    @if (media.IsImage)
+                    {
+                        <div class="position-relative">
+                            <img src="@media.Url" class="card-img-top" alt="@media.Alt" style="height: 200px; object-fit: cover;">
+                            <div class="position-absolute top-0 end-0 p-2">
+                                @if (media.Source == MediaSource.Unsplash)
+                                {
+                                    <span class="badge bg-info">
+                                        <i class="bi bi-cloud"></i> Unsplash
+                                    </span>
+                                }
+                                else if (media.Source == MediaSource.Local)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-hdd"></i> Local
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-link-45deg"></i> External
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                            <i class="bi bi-file-earmark display-1 text-muted"></i>
+                        </div>
+                    }
+                    
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate">@media.FileName</h6>
+                        <p class="card-text small text-muted mb-2">
+                            @if (!string.IsNullOrEmpty(media.Description))
+                            {
+                                @media.Description.Substring(0, Math.Min(media.Description.Length, 80))@(media.Description.Length > 80 ? "..." : "")
+                            }
+                            else
+                            {
+                                <em>No description</em>
+                            }
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center small text-muted">
+                            <span>@media.FormattedFileSize</span>
+                            @if (media.Width.HasValue && media.Height.HasValue)
+                            {
+                                <span>@media.Dimensions</span>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group w-100" role="group">
+                            <a asp-action="Details" asp-route-id="@media.Id" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@media.Id" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-media-id="@media.Id" data-media-name="@media.FileName">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    
+    <!-- Pagination would go here if implemented -->
+}
+else
+{
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <i class="bi bi-images display-1 text-muted"></i>
+        <h3 class="mt-3">No media files found</h3>
+        <p class="text-muted mb-4">Start by uploading some files or browsing Unsplash images.</p>
+        <div class="d-flex gap-2 justify-content-center">
+            <a asp-action="Upload" class="btn btn-primary">
+                <i class="bi bi-upload"></i> Upload Files
+            </a>
+            <a asp-action="Unsplash" class="btn btn-outline-primary">
+                <i class="bi bi-search"></i> Browse Unsplash
+            </a>
+        </div>
+    </div>
+}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle text-warning"></i> Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="mediaFileName"></strong>?</p>
+                <p class="text-muted small">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" id="deleteForm" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Handle delete modal
+        document.getElementById('deleteModal').addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const mediaId = button.getAttribute('data-media-id');
+            const mediaName = button.getAttribute('data-media-name');
+            
+            document.getElementById('mediaFileName').textContent = mediaName;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete")/' + mediaId;
+        });
+    </script>
+}

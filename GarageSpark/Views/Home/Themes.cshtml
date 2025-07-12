@@ -1,0 +1,132 @@
+@{
+    ViewData["Title"] = "Theme Showcase";
+}
+
+<div class="text-center">
+    <h1 class="display-4">🎨 Theme Showcase</h1>
+    <p class="lead">Explore WebSpark.Bootswatch themes and color modes</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="alert alert-info">
+            <h5>Current Theme Information</h5>
+            <p><strong>Theme:</strong> @ViewBag.CurrentTheme</p>
+            <p><strong>Color Mode:</strong> @ViewBag.CurrentColorMode</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="alert alert-success">
+            <h5>Available Themes</h5>
+            <p><strong>Total Themes:</strong> @ViewBag.AllStyles?.Count</p>
+            <p>Use the theme switcher in the navigation to try different themes!</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5>Primary Card</h5>
+            </div>
+            <div class="card-body">
+                <p>This is a primary card to showcase theme colors.</p>
+                <button class="btn btn-primary">Primary Button</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h5>Success Card</h5>
+            </div>
+            <div class="card-body">
+                <p>This is a success card to showcase theme colors.</p>
+                <button class="btn btn-success">Success Button</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5>Warning Card</h5>
+            </div>
+            <div class="card-body">
+                <p>This is a warning card to showcase theme colors.</p>
+                <button class="btn btn-warning">Warning Button</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5>Danger Card</h5>
+            </div>
+            <div class="card-body">
+                <p>This is a danger card to showcase theme colors.</p>
+                <button class="btn btn-danger">Danger Button</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h5>Info Card</h5>
+            </div>
+            <div class="card-body">
+                <p>This is an info card to showcase theme colors.</p>
+                <button class="btn btn-info">Info Button</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Bootstrap Components Showcase</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>Buttons</h6>
+                        <button class="btn btn-primary btn-sm">Primary</button>
+                        <button class="btn btn-secondary btn-sm">Secondary</button>
+                        <button class="btn btn-success btn-sm">Success</button>
+                        <button class="btn btn-danger btn-sm">Danger</button>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Badges</h6>
+                        <span class="badge bg-primary">Primary</span>
+                        <span class="badge bg-secondary">Secondary</span>
+                        <span class="badge bg-success">Success</span>
+                        <span class="badge bg-danger">Danger</span>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Progress</h6>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-primary" style="width: 25%"></div>
+                        </div>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-success" style="width: 50%"></div>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger mt-3">
+        <h5>Error</h5>
+        <p>@ViewBag.Error</p>
+    </div>
+}

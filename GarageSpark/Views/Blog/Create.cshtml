@@ -1,0 +1,559 @@
+@using GarageSpark.ViewModels
+@model BlogPostFormViewModel
+@{
+    ViewData["Title"] = "Create New Blog Post";
+}
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold text-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Create New Blog Post
+                    </h1>
+                    <p class="text-muted">Write amazing content with markdown and frontmatter</p>
+                </div>
+                <div>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Posts
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Validation Summary -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger" role="alert">
+            <h6><i class="bi bi-exclamation-triangle me-2"></i>Please correct the following errors:</h6>
+            <div asp-validation-summary="All" class="mb-0"></div>
+        </div>
+    }
+
+    <form asp-action="Create" method="post" novalidate>
+        <div class="row">
+            <!-- Main Content Area -->
+            <div class="col-lg-8">
+                <!-- Basic Information Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-file-text me-2"></i>Post Details
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label fw-semibold required"></label>
+                            <input asp-for="Title" class="form-control form-control-lg"
+                                placeholder="Enter an engaging title...">
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Slug" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-link-45deg"></i>
+                                </span>
+                                <input asp-for="Slug" class="form-control" placeholder="auto-generated-from-title">
+                            </div>
+                            <div class="form-text">Leave blank to auto-generate from title</div>
+                            <span asp-validation-for="Slug" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Excerpt" class="form-label fw-semibold"></label>
+                            <textarea asp-for="Excerpt" class="form-control" rows="3"
+                                placeholder="Brief summary for previews and SEO..."></textarea>
+                            <span asp-validation-for="Excerpt" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Editor Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-markdown me-2"></i>Content (Markdown + Frontmatter)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Pro Tip:</strong> Use frontmatter at the top for metadata, then write your content
+                            in Markdown.
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#markdownHelpModal"
+                                class="alert-link">View examples</a>
+                        </div>
+
+                        <div class="mb-3">
+                            <textarea asp-for="Content" class="form-control font-monospace" rows="20"
+                                placeholder="---&#10;title: &quot;Your Post Title&quot;&#10;description: &quot;SEO description&quot;&#10;tags: [&quot;development&quot;, &quot;markdown&quot;]&#10;author: &quot;Your Name&quot;&#10;date: 2025-07-12&#10;---&#10;&#10;# Your Blog Post&#10;&#10;Write your **amazing** content here with full Markdown support!&#10;&#10;## Features&#10;&#10;- Frontmatter metadata&#10;- Automatic HTML generation&#10;- SEO optimization&#10;- Tag management&#10;&#10;[Learn more](https://example.com)"></textarea>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Publishing Options Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-send me-2"></i>Publishing Options
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Action" class="form-label fw-semibold"></label>
+                            <select asp-for="Action" class="form-select" id="actionSelect">
+                                <option value="SaveDraft">Save as Draft</option>
+                                <option value="PublishNow">Publish Immediately</option>
+                                <option value="Schedule">Schedule for Later</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="scheduleSection" style="display: none;">
+                            <label asp-for="ScheduledPublishAt" class="form-label fw-semibold"></label>
+                            <input asp-for="ScheduledPublishAt" type="datetime-local" class="form-control">
+                            <span asp-validation-for="ScheduledPublishAt" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input asp-for="PublishNow" class="form-check-input" type="checkbox">
+                            <label asp-for="PublishNow" class="form-check-label fw-semibold"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Media & Settings Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-image me-2"></i>Media & Settings
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Cover Image Selection -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold required">Cover Image</label>
+                            <input asp-for="CoverMediaFileId" type="hidden" />
+                            <div class="border rounded p-3 bg-light">
+                                <div id="coverImagePreview" class="mb-2" style="display: none;">
+                                    <img id="coverImageThumbnail" src="" alt="Cover image" class="img-thumbnail"
+                                        style="max-height: 120px;">
+                                    <div class="mt-2">
+                                        <small id="coverImageName" class="text-muted"></small>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm"
+                                        onclick="openMediaPicker('cover')">
+                                        <i class="bi bi-images me-1"></i>Choose from Media Library
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="clearCoverImage()" style="display: none;" id="clearCoverBtn">
+                                        <i class="bi bi-x-circle me-1"></i>Clear
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-text">Select a cover image from your media library</div>
+                            <span asp-validation-for="CoverMediaFileId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Content Media Selection -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Content Media</label>
+                            <input asp-for="SelectedMediaFileIdsString" type="hidden" />
+                            <div class="border rounded p-3 bg-light">
+                                <div id="selectedMediaPreview" class="mb-2"></div>
+                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                    onclick="openMediaPicker('content')">
+                                    <i class="bi bi-images me-1"></i>Add Media Files
+                                </button>
+                                <div class="form-text mt-2">Select media files to associate with this post</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="TagNames" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-tags"></i>
+                                </span>
+                                <input asp-for="TagNames" class="form-control" placeholder="tag1, tag2, tag3">
+                            </div>
+                            <div class="form-text">Separate tags with commas</div>
+                            <span asp-validation-for="TagNames" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Settings Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-search me-2"></i>SEO Settings
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="MetaTitle" class="form-label fw-semibold"></label>
+                            <input asp-for="MetaTitle" class="form-control"
+                                placeholder="Optimized title for search engines">
+                            <div class="form-text">
+                                <span id="metaTitleCount">0</span>/60 characters
+                            </div>
+                            <span asp-validation-for="MetaTitle" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MetaDescription" class="form-label fw-semibold"></label>
+                            <textarea asp-for="MetaDescription" class="form-control" rows="3"
+                                placeholder="Brief description for search results"></textarea>
+                            <div class="form-text">
+                                <span id="metaDescCount">0</span>/160 characters
+                            </div>
+                            <span asp-validation-for="MetaDescription" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-save me-2"></i>Create Post
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Markdown Help Modal -->
+<div class="modal fade" id="markdownHelpModal" tabindex="-1" aria-labelledby="markdownHelpModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="markdownHelpModalLabel">
+                    <i class="bi bi-markdown me-2"></i>Markdown + Frontmatter Guide
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6><i class="bi bi-info-circle me-2"></i>Frontmatter Example:</h6>
+                <pre class="bg-light p-3 rounded"><code>---
+title: "My Amazing Blog Post"
+description: "Learn how to create incredible content"
+tags: ["development", "markdown", "blogging"]
+author: "Your Name"
+date: 2025-07-12
+featured: true
+---</code></pre>
+
+                <h6 class="mt-4"><i class="bi bi-markdown me-2"></i>Markdown Examples:</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Headers:</h6>
+                        <pre class="bg-light p-2 rounded small"><code># H1 Header
+## H2 Header
+### H3 Header</code></pre>
+
+                        <h6>Text Formatting:</h6>
+                        <pre class="bg-light p-2 rounded small"><code>**Bold text**
+*Italic text*
+`Inline code`</code></pre>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Lists:</h6>
+                        <pre class="bg-light p-2 rounded small"><code>- Bullet point
+- Another point
+
+1. Numbered list
+2. Second item</code></pre>
+
+                        <h6>Links & Images:</h6>
+                        <pre class="bg-light p-2 rounded small"><code>[Link text](URL)
+![Alt text](image-url)</code></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function ()
+        {
+            // Handle action select change
+            const actionSelect = document.getElementById('actionSelect');
+            const scheduleSection = document.getElementById('scheduleSection');
+
+            actionSelect.addEventListener('change', function ()
+            {
+                if (this.value === 'Schedule')
+                {
+                    scheduleSection.style.display = 'block';
+                } else
+                {
+                    scheduleSection.style.display = 'none';
+                }
+            });
+
+            // Character counters for SEO fields
+            const metaTitle = document.querySelector('input[name="MetaTitle"]');
+            const metaDescription = document.querySelector('textarea[name="MetaDescription"]');
+            const metaTitleCount = document.getElementById('metaTitleCount');
+            const metaDescCount = document.getElementById('metaDescCount');
+
+            if (metaTitle && metaTitleCount)
+            {
+                metaTitle.addEventListener('input', function ()
+                {
+                    metaTitleCount.textContent = this.value.length;
+                    metaTitleCount.parentElement.className = this.value.length > 60 ? 'form-text text-danger' : 'form-text';
+                });
+            }
+
+            if (metaDescription && metaDescCount)
+            {
+                metaDescription.addEventListener('input', function ()
+                {
+                    metaDescCount.textContent = this.value.length;
+                    metaDescCount.parentElement.className = this.value.length > 160 ? 'form-text text-danger' : 'form-text';
+                });
+            }
+        });
+
+        // Media picker functionality
+        let selectedMediaFiles = [];
+        let currentPickerType = '';
+
+        function openMediaPicker(type)
+        {
+            currentPickerType = type;
+
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                                    <div class="modal-dialog modal-xl">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">
+                                                    <i class="bi bi-images me-2"></i>Select Media Files
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                                                <div id="mediaGrid" class="row">
+                                                    <div class="col-12 text-center">
+                                                        <div class="spinner-border" role="status">
+                                                            <span class="visually-hidden">Loading...</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <div class="me-auto">
+                                                    <small class="text-muted">
+                                                        ${currentPickerType === 'cover' ? 'Select one image for cover' : 'Select multiple images for content'}
+                                                    </small>
+                                                </div>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="button" class="btn btn-primary" onclick="selectMedia()">
+                                                    <i class="bi bi-check-lg me-1"></i>Select
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+
+            // Load media files
+            loadMediaFiles();
+
+            // Clean up modal on hide
+            modal.addEventListener('hidden.bs.modal', function ()
+            {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function loadMediaFiles()
+        {
+            fetch('/api/media')
+                .then(response => response.json())
+                .then(data =>
+                {
+                    const mediaGrid = document.getElementById('mediaGrid');
+                    mediaGrid.innerHTML = '';
+
+                    // Check if we have media files
+                    if (!data.mediaFiles || data.mediaFiles.length === 0)
+                    {
+                        mediaGrid.innerHTML = '<div class="col-12 text-center"><p class="text-muted">No media files found</p></div>';
+                        return;
+                    }
+
+                    data.mediaFiles.forEach(media =>
+                    {
+                        const mediaItem = document.createElement('div');
+                        mediaItem.className = 'col-md-3 mb-3';
+                        mediaItem.innerHTML = `
+                                                <div class="card media-item position-relative" data-id="${media.id}" onclick="toggleMediaSelection('${media.id}', this)">
+                                                    <img src="${media.url}" alt="${media.alt || media.fileName}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                                    <div class="card-body p-2">
+                                                        <small class="text-muted">${media.fileName}</small>
+                                                    </div>
+                                                </div>
+                                            `;
+                        mediaGrid.appendChild(mediaItem);
+                    });
+                })
+                .catch(error =>
+                {
+                    console.error('Error loading media:', error);
+                    const mediaGrid = document.getElementById('mediaGrid');
+                    mediaGrid.innerHTML = '<div class="col-12 text-center"><p class="text-danger">Error loading media files</p></div>';
+                });
+        }
+
+        function toggleMediaSelection(mediaId, element)
+        {
+            if (currentPickerType === 'cover')
+            {
+                // For cover image, only allow single selection
+                document.querySelectorAll('.media-item').forEach(item => item.classList.remove('border-primary'));
+                element.classList.add('border-primary');
+                selectedMediaFiles = [mediaId];
+            } else
+            {
+                // For content media, allow multiple selection
+                if (element.classList.contains('border-primary'))
+                {
+                    element.classList.remove('border-primary');
+                    selectedMediaFiles = selectedMediaFiles.filter(id => id !== mediaId);
+                } else
+                {
+                    element.classList.add('border-primary');
+                    selectedMediaFiles.push(mediaId);
+                }
+            }
+        }
+
+        function selectMedia()
+        {
+            if (currentPickerType === 'cover' && selectedMediaFiles.length > 0)
+            {
+                document.getElementById('CoverMediaFileId').value = selectedMediaFiles[0];
+                updateCoverImagePreview(selectedMediaFiles[0]);
+            } else if (currentPickerType === 'content')
+            {
+                document.getElementById('SelectedMediaFileIdsString').value = selectedMediaFiles.join(',');
+                updateContentMediaPreview();
+            }
+
+            // Close modal
+            const modal = document.querySelector('.modal.show');
+            if (modal)
+            {
+                bootstrap.Modal.getInstance(modal).hide();
+            }
+        }
+
+        function updateCoverImagePreview(mediaId)
+        {
+            fetch(`/api/media/${mediaId}`)
+                .then(response => response.json())
+                .then(media =>
+                {
+                    document.getElementById('coverImageThumbnail').src = media.url;
+                    document.getElementById('coverImageName').textContent = media.fileName;
+                    document.getElementById('coverImagePreview').style.display = 'block';
+                    document.getElementById('clearCoverBtn').style.display = 'inline-block';
+                })
+                .catch(error => console.error('Error loading media:', error));
+        }
+
+        function updateContentMediaPreview()
+        {
+            const preview = document.getElementById('selectedMediaPreview');
+            if (selectedMediaFiles.length === 0)
+            {
+                preview.innerHTML = '<small class="text-muted">No media files selected</small>';
+                return;
+            }
+
+            preview.innerHTML = `<small class="text-muted">${selectedMediaFiles.length} media file(s) selected</small>`;
+        }
+
+        function clearCoverImage()
+        {
+            document.getElementById('CoverMediaFileId').value = '';
+            document.getElementById('coverImagePreview').style.display = 'none';
+            document.getElementById('clearCoverBtn').style.display = 'none';
+        }
+    </script>
+}
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+
+    /* Media picker styles */
+    .media-item {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid transparent !important;
+    }
+
+    .media-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .media-item.border-primary {
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 10px rgba(13, 110, 253, 0.3);
+        transform: scale(1.02);
+    }
+
+    .media-item.border-primary::after {
+        content: "✓";
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: #0d6efd;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+    }
+</style>

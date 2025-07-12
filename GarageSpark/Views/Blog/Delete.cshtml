@@ -1,0 +1,364 @@
+@model BlogPostViewModel
+@{
+    ViewData["Title"] = "Delete Post";
+}
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-action="Index" class="text-decoration-none">
+                            <i class="bi bi-house-door"></i> Blog Posts
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="text-decoration-none">@Model.Title</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Delete</li>
+                </ol>
+            </nav>
+            
+            <div class="alert alert-danger border-0 shadow-sm">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill me-3" style="font-size: 2rem;"></i>
+                    <div class="flex-grow-1">
+                        <h4 class="alert-heading mb-1">Confirm Deletion</h4>
+                        <p class="mb-0">Are you sure you want to delete this blog post? This action cannot be undone.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Post Preview -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-file-text me-2"></i>Post to be Deleted
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Post Status -->
+                    <div class="mb-3">
+                        @if (Model.IsPublished)
+                        {
+                            <span class="badge bg-success fs-6 me-2">
+                                <i class="bi bi-check-circle me-1"></i>Published
+                            </span>
+                            <div class="alert alert-warning mt-2">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <strong>Warning:</strong> This post is currently published and visible to the public.
+                                Deleting it will make it unavailable to readers.
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark fs-6 me-2">
+                                <i class="bi bi-pencil me-1"></i>Draft
+                            </span>
+                        }
+                        
+                        @foreach (var tag in Model.Tags)
+                        {
+                            <span class="badge bg-secondary me-1">#@tag.Name</span>
+                        }
+                    </div>
+
+                    <!-- Post Title and Excerpt -->
+                    <h3 class="text-primary mb-3">@Model.Title</h3>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Excerpt))
+                    {
+                        <p class="lead text-muted mb-3">@Model.Excerpt</p>
+                    }
+
+                    <!-- Cover Image Preview -->
+                    @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+                    {
+                        <div class="mb-3">
+                            <img src="@Model.CoverImageUrl" class="img-fluid rounded" 
+                                 alt="@Model.Title" style="max-height: 200px; object-fit: cover;">
+                        </div>
+                    }
+
+                    <!-- Content Preview -->
+                    @if (!string.IsNullOrEmpty(Model.ProcessedHtml))
+                    {
+                        <div class="content-preview border rounded p-3 bg-light mb-3" style="max-height: 300px; overflow-y: auto;">
+                            @Html.Raw(Model.ProcessedHtml)
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(Model.Content))
+                    {
+                        <div class="mb-3">
+                            <h6 class="text-muted">Raw Content (first 500 characters):</h6>
+                            <pre class="bg-light p-3 rounded border" style="max-height: 200px; overflow-y: auto; font-size: 0.9em;">@(Model.Content.Length > 500 ? Model.Content.Substring(0, 500) + "..." : Model.Content)</pre>
+                        </div>
+                    }
+
+                    <!-- Post Statistics -->
+                    <div class="row g-3 mt-3 pt-3 border-top">
+                        <div class="col-sm-3">
+                            <div class="text-center">
+                                <div class="h5 text-primary mb-0">@Model.WordCount</div>
+                                <small class="text-muted">Words</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="text-center">
+                                <div class="h5 text-info mb-0">@Model.ReadingTimeMinutes</div>
+                                <small class="text-muted">Min Read</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="text-center">
+                                <div class="h5 text-success mb-0">@Model.Tags.Count</div>
+                                <small class="text-muted">Tags</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="text-center">
+                                <div class="h5 text-warning mb-0">@(Model.FrontmatterData.Count)</div>
+                                <small class="text-muted">Metadata</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deletion Details and Actions -->
+        <div class="col-lg-4">
+            <!-- Post Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Post Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">
+                                <i class="bi bi-link-45deg me-1"></i>Slug:
+                            </span>
+                            <code class="text-primary">@Model.Slug</code>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">
+                                <i class="bi bi-calendar-plus me-1"></i>Created:
+                            </span>
+                            <span>@Model.CreatedAt.ToString("MMM dd, yyyy")</span>
+                        </div>
+                        
+                        @if (Model.UpdatedAt != Model.CreatedAt)
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">
+                                    <i class="bi bi-calendar-check me-1"></i>Updated:
+                                </span>
+                                <span>@Model.UpdatedAt.ToString("MMM dd, yyyy")</span>
+                            </div>
+                        }
+                        
+                        @if (Model.PublishedAt.HasValue)
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">
+                                    <i class="bi bi-send me-1"></i>Published:
+                                </span>
+                                <span>@Model.PublishedAt.Value.ToString("MMM dd, yyyy")</span>
+                            </div>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(Model.CreatedBy))
+                        {
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">
+                                    <i class="bi bi-person me-1"></i>Author:
+                                </span>
+                                <span>@Model.CreatedBy</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consequences Warning -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Deletion Consequences
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-x-circle text-danger me-2"></i>
+                            The post content will be permanently lost
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-x-circle text-danger me-2"></i>
+                            All associated metadata will be deleted
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-x-circle text-danger me-2"></i>
+                            Tag associations will be removed
+                        </li>
+                        @if (Model.IsPublished)
+                        {
+                            <li class="mb-2">
+                                <i class="bi bi-x-circle text-danger me-2"></i>
+                                Public URL will become unavailable
+                            </li>
+                            <li class="mb-0">
+                                <i class="bi bi-x-circle text-danger me-2"></i>
+                                SEO rankings may be affected
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="mb-0">
+                                <i class="bi bi-info-circle text-info me-2"></i>
+                                Draft will be removed from your workspace
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Alternatives -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightbulb me-2"></i>Consider Alternatives
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="small mb-3">Instead of deleting, you might want to:</p>
+                    <div class="d-grid gap-2">
+                        @if (Model.IsPublished)
+                        {
+                            <form asp-action="Unpublish" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-warning btn-sm w-100">
+                                    <i class="bi bi-eye-slash me-2"></i>Unpublish Instead
+                                </button>
+                            </form>
+                        }
+                        
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil me-2"></i>Edit Content
+                        </a>
+                        
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-eye me-2"></i>Review Again
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirmation Actions -->
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-trash me-2"></i>Confirm Deletion
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                            <label class="form-check-label fw-semibold" for="confirmDelete">
+                                I understand this action cannot be undone
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <form asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post" id="deleteForm">
+                            <button type="submit" class="btn btn-danger w-100" id="deleteButton" disabled>
+                                <i class="bi bi-trash me-2"></i>Yes, Delete This Post
+                            </button>
+                        </form>
+                        
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Cancel, Keep Post
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Enable/disable delete button based on confirmation checkbox
+            $('#confirmDelete').change(function() {
+                $('#deleteButton').prop('disabled', !this.checked);
+            });
+
+            // Confirm before deletion
+            $('#deleteForm').on('submit', function(e) {
+                if (!$('#confirmDelete').is(':checked')) {
+                    e.preventDefault();
+                    alert('Please confirm that you understand this action cannot be undone.');
+                    return false;
+                }
+
+                const confirmed = confirm('Are you absolutely sure you want to delete this post? This action is permanent and cannot be reversed.');
+                if (!confirmed) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Escape key to cancel
+            $(document).keyup(function(e) {
+                if (e.keyCode === 27) { // Escape key
+                    window.location.href = '@Url.Action("Details", new { id = Model.Id })';
+                }
+            });
+        });
+    </script>
+}
+
+<style>
+    .content-preview {
+        font-size: 0.9em;
+        line-height: 1.5;
+    }
+    
+    .content-preview h1, .content-preview h2, .content-preview h3,
+    .content-preview h4, .content-preview h5, .content-preview h6 {
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        font-size: 1em;
+        font-weight: 600;
+    }
+    
+    .content-preview p {
+        margin-bottom: 0.75rem;
+    }
+    
+    .content-preview code {
+        background-color: rgba(0, 0, 0, 0.1);
+        padding: 0.1rem 0.3rem;
+        border-radius: 0.2rem;
+        font-size: 0.8em;
+    }
+    
+    .content-preview blockquote {
+        border-left: 3px solid #dee2e6;
+        padding-left: 0.75rem;
+        margin: 0.75rem 0;
+        color: #6c757d;
+    }
+</style>
