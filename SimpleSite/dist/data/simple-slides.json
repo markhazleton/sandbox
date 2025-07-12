@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "version": "1.0",
+    "created": "2025-01-08",
+    "lastModified": "2025-01-08",
+    "author": "Medical Team",
+    "tags": ["medical", "simple", "mobile-app"],
+    "targetAudience": "patients",
+    "estimatedDuration": "2 minutes",
+    "difficulty": "beginner"
+  },
+  "tutorial": {
+    "title": "Simple Medical Chat Tutorial",
+    "description": "A simplified introduction to our mobile medical consultation platform",
+    "version": "1.0",
+    "slideCount": 5,
+    "navigation": {
+      "previousText": "← Back",
+      "nextText": "Continue →",
+      "closeText": "×",
+      "startButtonText": "Start Simple Tutorial",
+      "previousLocation": "bottom",
+      "nextLocation": "bottom"
+    },
+    "settings": {
+      "showCounter": true,
+      "allowKeyboardNavigation": true,
+      "imageSize": {
+        "width": 200,
+        "height": 300
+      }
+    }
+  },
+  "slides": [
+    {
+      "id": 1,
+      "title": "Welcome to MedChat",
+      "text": "Start by opening the MedChat app and tapping 'Start New Conversation' to begin your consultation.",
+      "media": {
+        "type": "image",
+        "img": "https://placehold.co/200x300/4A90E2/FFF?text=Welcome+to+MedChat",
+        "altText": "MedChat app home screen showing the Start New Conversation button"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Describe Your Symptoms",
+      "text": "Type your main concern clearly and specifically. The more details you provide, the better assistance you'll receive.",
+      "media": {
+        "type": "image",
+        "img": "https://placehold.co/200x300/50C878/FFF?text=Describe+Symptoms",
+        "altText": "Screenshot of symptom description interface with text input field"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Wait for Response",
+      "text": "Our healthcare professionals will review your information and provide guidance within minutes.",
+      "media": {
+        "type": "image",
+        "img": "https://placehold.co/200x300/FF6B6B/FFF?text=Wait+for+Response",
+        "altText": "Loading screen showing response is being prepared"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Review Recommendations",
+      "text": "Read through the healthcare professional's recommendations and follow-up questions carefully.",
+      "media": {
+        "type": "image",
+        "img": "https://placehold.co/200x300/9B59B6/FFF?text=Review+Advice",
+        "altText": "Screen showing healthcare professional's recommendations and advice"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Follow Up if Needed",
+      "text": "You can ask follow-up questions or start a new conversation anytime through the app.",
+      "media": {
+        "type": "image",
+        "img": "https://placehold.co/200x300/F39C12/FFF?text=Follow+Up",
+        "altText": "Follow-up options screen with new conversation and additional questions buttons"
+      }
+    }
+  ]
+}

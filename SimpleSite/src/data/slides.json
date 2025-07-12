@@ -1,0 +1,296 @@
+{
+  "meta": {
+    "version": "2.0",
+    "created": "2024-01-01",
+    "lastModified": "2025-06-03",
+    "author": "Medical Team",
+    "tags": ["medical", "tutorial", "mobile-app", "healthcare"],
+    "targetAudience": "patients",
+    "estimatedDuration": "5 minutes",
+    "difficulty": "beginner"
+  },
+  "tutorial": {
+    "title": "Medical Chat Tutorial",
+    "description": "Learn how to use our mobile medical consultation platform effectively",
+    "version": "2.0",
+    "slideCount": 5,
+    "navigation": {
+      "previousText": "← Back",
+      "nextText": "Continue →",
+      "closeText": "×",
+      "startButtonText": "Start Tutorial",
+      "skipText": "Skip to End",
+      "previousLocation": "top",
+      "nextLocation": "bottom"
+    },
+    "settings": {
+      "autoAdvance": {
+        "enabled": false,
+        "interval": 8000,
+        "pauseOnHover": true
+      },
+      "showCounter": true,
+      "allowKeyboardNavigation": true,
+      "modalWidth": "500px",
+      "imageSize": {
+        "width": 200,
+        "height": 300
+      },
+      "theme": {
+        "name": "medical",
+        "primaryColor": "#4A90E2",
+        "secondaryColor": "#50C878",
+        "accentColor": "#FF6B6B",
+        "fontFamily": "Arial, sans-serif"
+      },
+      "animations": {
+        "enabled": true,
+        "slideTransition": "fade",
+        "duration": 300
+      }
+    },
+    "accessibility": {
+      "screenReader": true,
+      "highContrast": false,
+      "fontSize": "medium",
+      "autoRead": false,
+      "altTextRequired": true
+    },
+    "localization": {
+      "defaultLanguage": "en",
+      "supportedLanguages": ["en", "es", "fr"],
+      "rtlSupport": false
+    },
+    "tracking": {
+      "enableAnalytics": false,
+      "saveProgress": true,
+      "timeSpentTracking": true,
+      "completionCertificate": {
+        "enabled": true,
+        "template": "Congratulations! You've completed the Medical Chat Tutorial."
+      }
+    },
+    "validation": {
+      "requiredFields": ["title", "text"],
+      "maxTextLength": 300,
+      "supportedImageFormats": ["jpg", "png", "gif", "webp", "svg"]
+    }
+  },
+  "slides": [
+    {
+      "id": 1,
+      "title": "Welcome to MedChat",
+      "subtitle": "Getting Started with Your Medical Consultation",
+      "text": "Start by opening the MedChat app and tapping 'Start New Conversation' to begin your consultation.",
+      "bulletPoints": [
+        "Download and open the MedChat mobile app",
+        "Create an account or log in",
+        "Tap 'Start New Conversation' button",
+        "Choose your preferred language if prompted"
+      ],
+      "tip": "💡 Tip: Make sure you have a stable internet connection before starting your consultation.",
+      "media": {
+        "type": "image",
+        "img": "https://placehold.co/100x150/4A90E2/FFF?text=Welcome+to+MedChat",
+        "altText": "MedChat app home screen showing the Start New Conversation button",
+        "caption": "The MedChat app home screen"
+      },
+      "duration": 8000,
+      "actions": {
+        "canSkip": true,
+        "showProgress": true,
+        "completionRequired": false
+      },
+      "interactive": {
+        "type": "checklist",
+        "items": [
+          "I have downloaded the MedChat app",
+          "I have created an account",
+          "I understand how to start a conversation"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "title": "Describe Your Symptoms",
+      "subtitle": "Providing Clear and Detailed Information",
+      "text": "Type your main concern clearly and specifically. The more details you provide, the better assistance you'll receive.",
+      "bulletPoints": [
+        "Describe your primary symptom or concern",
+        "Include when symptoms started (hours, days, weeks ago)",
+        "Rate severity on a scale of 1-10",
+        "Mention any related symptoms",
+        "List any medications you're currently taking"
+      ],
+      "tip": "⚠️ Important: Be honest and thorough - this helps healthcare providers give you the best guidance.",
+      "warning": "🚨 For emergency situations (chest pain, difficulty breathing, severe injury), call emergency services immediately.",
+      "media": {
+        "type": "image",
+        "img": "https://placehold.co/100x150/50C878/FFF?text=Describe+Symptoms",
+        "altText": "Screenshot of symptom description interface with text input field",
+        "caption": "Symptom description interface"
+      },
+      "duration": 10000,
+      "actions": {
+        "canSkip": true,
+        "showProgress": true,
+        "completionRequired": false
+      },
+      "interactive": {
+        "type": "quiz",
+        "question": "What information should you include when describing symptoms?",
+        "options": [
+          "Only the main symptom",
+          "When they started and severity level",
+          "All symptoms, timing, severity, and current medications",
+          "Just a brief description"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Comprehensive information helps healthcare providers make better assessments."
+      },
+      "hotspots": [
+        {
+          "x": 50,
+          "y": 40,
+          "tooltip": "Tap here to start typing your symptoms",
+          "action": "highlight"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Get Your Assessment",
+      "subtitle": "Understanding Your Triage Results",
+      "text": "Review the AI-powered triage recommendation and connect with the appropriate healthcare provider based on your needs.",
+      "bulletPoints": [
+        "Read the triage assessment carefully",
+        "Understand the urgency level (Low, Medium, High, Emergency)",
+        "Review recommended next steps",
+        "Choose to connect with available healthcare providers",
+        "Save your consultation summary for future reference"
+      ],
+      "tip": "📋 Tip: Keep a record of your consultation for follow-up appointments or insurance purposes.",
+      "media": {
+        "type": "image",
+        "img": "https://placehold.co/100x150/FF6B6B/FFF?text=Get+Assessment",
+        "altText": "Assessment results screen showing triage recommendation and provider options",
+        "caption": "Your personalized assessment results"
+      },
+      "duration": 8000,
+      "actions": {
+        "canSkip": true,
+        "showProgress": true,
+        "completionRequired": true
+      },
+      "navigation": {
+        "conditions": {
+          "skipToSlide": 5,
+          "requiresCompletion": false
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Connect with Providers",
+      "subtitle": "Getting Professional Medical Guidance",
+      "text": "Based on your assessment, you can now connect with qualified healthcare professionals for personalized care.",
+      "bulletPoints": [
+        "View available healthcare providers",
+        "Check provider specialties and availability",
+        "Schedule an appointment or start immediate chat",
+        "Share your assessment results with the provider",
+        "Ask questions and get professional medical advice"
+      ],
+      "tip": "👩‍⚕️ Tip: Providers can see your initial assessment, so you won't need to repeat all your information.",
+      "media": {
+        "type": "image",
+        "img": "https://placehold.co/100x150/9B59B6/FFF?text=Connect+Providers",
+        "altText": "Provider selection screen showing available healthcare professionals",
+        "caption": "Available healthcare providers"
+      },
+      "duration": 8000,
+      "actions": {
+        "canSkip": true,
+        "showProgress": true,
+        "completionRequired": false
+      },
+      "personalization": {
+        "userTypes": {
+          "first-time": {
+            "text": "As a new user, you'll be guided through the provider selection process step by step."
+          },
+          "returning": {
+            "text": "You can quickly connect with your previous providers or find new specialists."
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Tutorial Complete!",
+      "subtitle": "You're Ready to Use MedChat",
+      "text": "Congratulations! You now know how to use MedChat effectively for your healthcare needs. Remember to always seek emergency care for urgent situations.",
+      "bulletPoints": [
+        "You can start a new consultation anytime",
+        "Your consultation history is saved in your account",
+        "Enable notifications to hear back from providers",
+        "Rate your experience to help us improve",
+        "Contact support if you need additional help"
+      ],
+      "tip": "🎉 Well done! You're now ready to get quality healthcare guidance whenever you need it.",
+      "media": {
+        "type": "image",
+        "img": "https://placehold.co/100x150/27AE60/FFF?text=Complete!",
+        "altText": "Completion screen with checkmark and congratulations message",
+        "caption": "Tutorial completed successfully!"
+      },
+      "duration": 6000,
+      "actions": {
+        "canSkip": false,
+        "showProgress": true,
+        "completionRequired": true,
+        "showCertificate": true
+      },
+      "feedback": {
+        "collectRating": true,
+        "allowComments": true,
+        "questions": [
+          "How helpful was this tutorial?",
+          "Would you recommend MedChat to others?",
+          "Any suggestions for improvement?"
+        ]
+      },
+      "completion": {
+        "showCertificate": true,
+        "certificateText": "You have successfully completed the MedChat Tutorial!",
+        "nextSteps": [
+          "Start your first real consultation",
+          "Explore the app settings",
+          "Set up your health profile"
+        ]
+      }
+    }
+  ],
+  "errorHandling": {
+    "fallbackContent": {
+      "title": "Content Unavailable",
+      "text": "We're having trouble loading this content. Please check your internet connection and try again.",
+      "img": "https://placehold.co/100x150/95A5A6/FFF?text=Error"
+    },
+    "retryOptions": {
+      "enabled": true,
+      "maxAttempts": 3,
+      "retryDelay": 2000
+    }
+  },
+  "feedback": {
+    "collectRatings": true,
+    "allowComments": true,
+    "showOnSlides": [5],
+    "ratingScale": {
+      "min": 1,
+      "max": 5,
+      "labels": ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+    }
+  }
+}

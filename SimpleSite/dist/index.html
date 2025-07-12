@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Medical Chat Tutorial</title>
+    <link href="assets/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/hero-gradient.css" rel="stylesheet" />
+  </head>
+  <body class="bg-light min-vh-100 py-4">
+    <div class="hero-gradient text-center text-white py-5 mb-4">
+      <div class="container">
+        <h1 class="display-4 fw-bold mb-3">Medical Chat Tutorial</h1>        <p class="lead mb-4">
+          Learn how to use our mobile medical consultation platform effectively
+        </p>        <div class="mb-4">
+          <label for="tutorialSelect" class="form-label text-white fw-semibold">Choose Tutorial Type:</label>
+          <select class="form-select mx-auto tutorial-selector" id="tutorialSelect">
+            <option value="data/slides.json">Complete Tutorial (Interactive)</option>
+            <option value="data/simple-slides.json">Simple Tutorial (Basic)</option>
+          </select>
+        </div>
+        <button class="btn btn-light btn-lg px-4" onclick="openModal()">
+          <i class="bi bi-play-circle me-2"></i>Start Tutorial
+        </button>
+      </div>
+    </div>
+
+    <!-- Bootstrap Modal -->
+    <div
+      class="modal fade"
+      id="tutorialModal"
+      tabindex="-1"
+      aria-labelledby="tutorialModalLabel"
+      aria-hidden="true"
+    >
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+      >
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="tutorialModalLabel">
+              Medical Chat Tutorial
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body p-4">
+            <div id="slideContainer" class="text-center">
+              <!-- Slides will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Bootstrap Bundle JS -->
+    <script src="assets/bootstrap.bundle.min.js"></script>
+    <script src="js/script.js"></script>
+  </body>
+</html>
